@@ -51,7 +51,7 @@ Extract the Anki file content and its card parameters into the output folder, th
 
 ## Version
 
-1.0
+0.1
 
 ## Author
 
