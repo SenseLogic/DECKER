@@ -24,7 +24,7 @@ decker [options] apkg_file_path OUTPUT_FOLDER/
 ## Options
 
 ```
---filter "filter" : filter to extract the card parameters
+--filter "filter" : extract the card parameters using this filter
 --trim : trim the card parameters
 --csv "format" : export a CSV file using this format
 ```
@@ -35,19 +35,19 @@ decker [options] apkg_file_path OUTPUT_FOLDER/
 decker "spanish_vocabulary.apkg" "SPANISH_VOCABULARY/"
 ```
 
-Extract the Anki file content.
+Extract the Anki file content into the output folder.
 
 ```bash
 decker --fields "<img src=\"{{image}}\">§{{spanish}}<br/><i>{{english}}</i>" --trim "spanish_vocabulary.apkg" "SPANISH_VOCABULARY/"
 ```
 
-Extract the Anki file content and its card parameters.
+Extract the Anki file content and its card parameters into the output folder.
 
 ```bash
 decker --fields "<img src=\"{{image}}\">§{{spanish}}<br/><i>{{english}}</i>" --trim --csv "{{spanish}}|{{english}}|{{image}}" "spanish_vocabulary.apkg" "SPANISH_VOCABULARY/"
 ```
 
-Extract the Anki file content and its card parameters, and generate the "collection.csv" file using the provided line format.
+Extract the Anki file content and its card parameters into the output folder, then generate a `collection.csv` file using the provided format.
 
 ## Version
 
