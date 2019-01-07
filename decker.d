@@ -12,6 +12,460 @@ import std.zip;
 
 // -- TYPES
 
+enum MESSAGE_TYPE
+{
+    Uint32,
+    Uint64,
+    Int64,
+    Int32,
+    Sint32,
+    Sint64,
+    Bool,
+    Enum,
+    Fixed64,
+    Fixed32,
+    Sfixed64,
+    Sfixed32,
+    Double,
+    Float,
+    Bytes,
+    String,
+    Pack,
+    Message
+}
+
+// ~~
+
+class MESSAGE
+{
+    // -- ATTRIBUTES
+
+    string
+        Name;
+    long
+        FieldIndex;
+    MESSAGE_TYPE
+        Type;
+    ubyte[]
+        ByteArray;
+    MESSAGE[]
+        SubMessageArray;
+
+    // -- CONSTRUCTORS
+
+    this(
+        string name = "",
+        long field_index = 0,
+        MESSAGE_TYPE message_type = MESSAGE_TYPE.Message,
+        ubyte[] byte_array = null
+        )
+    {
+        Name = name;
+        FieldIndex = field_index;
+        Type = message_type;
+        ByteArray = byte_array;
+    }
+
+    // -- INQUIRIES
+
+    ubyte[] GetUint64ByteArray(
+        long field_index,
+        ulong natural
+        )
+    {
+        ubyte[]
+            byte_array;
+        long
+            byte_count;
+
+        byte_array = new ubyte[ 11 ];
+        byte_array[ 0 ] = ( field_index << 3 ).to!ubyte();
+        byte_count = 1;
+
+        do
+        {
+            byte_array[ byte_count ] = ( natural & 127 ).to!ubyte();
+            natural >>= 7;
+            ++byte_count;
+        }
+        while ( natural != 0 );
+
+        byte_array[ byte_count - 1 ] |= 128;
+
+        return byte_array[ 0 .. byte_count ];
+    }
+
+    // ~~
+
+    ubyte[] GetUint32ByteArray(
+        long field_index,
+        uint natural
+        )
+    {
+        return GetUint64ByteArray( field_index, natural.to!ulong() );
+    }
+
+    // ~~
+
+    ubyte[] GetInt64ByteArray(
+        long field_index,
+        long integer
+        )
+    {
+        return GetUint64ByteArray( field_index, integer.to!ulong() );
+    }
+
+    // ~~
+
+    ubyte[] GetInt32ByteArray(
+        long field_index,
+        int integer
+        )
+    {
+        return GetInt64ByteArray( field_index, integer.to!long() );
+    }
+
+    // ~~
+
+    ubyte[] GetSint64ByteArray(
+        long field_index,
+        long integer
+        )
+    {
+        ulong
+            natural;
+
+        natural = integer.to!ulong();
+
+        return GetUint64ByteArray( field_index, ( natural << 1 ) ^ ( natural >> 63 ) );
+    }
+
+    // ~~
+
+    ubyte[] GetSint32ByteArray(
+        long field_index,
+        int integer
+        )
+    {
+        uint
+            natural;
+
+        natural = integer.to!uint();
+
+        return GetUint32ByteArray( field_index, ( natural << 1 ) ^ ( natural >> 31 ) );
+    }
+
+
+    // ~~
+
+    ubyte[] GetBoolByteArray(
+        long field_index,
+        bool boolean
+        )
+    {
+        return GetUint64ByteArray( field_index, boolean ? 1 : 0 );
+    }
+
+    // ~~
+
+    ubyte[] GetFixed64ByteArray(
+        long field_index,
+        ulong natural
+        )
+    {
+        ubyte[]
+            byte_array;
+
+        byte_array = new ubyte[ 1 ];
+        byte_array[ 0 ] = ( 1 | ( field_index << 3 ) ).to!ubyte();
+        byte_array ~= ( cast( ubyte * )&natural )[ 0 .. 8 ];
+
+        return byte_array;
+    }
+
+    // ~~
+
+    ubyte[] GetFixed32ByteArray(
+        long field_index,
+        uint natural
+        )
+    {
+        ubyte[]
+            byte_array;
+
+        byte_array = new ubyte[ 1 ];
+        byte_array[ 0 ] = ( 5 | ( field_index << 3 ) ).to!ubyte();
+        byte_array ~= ( cast( ubyte * )&natural )[ 0 .. 4 ];
+
+        return byte_array;
+    }
+
+    // ~~
+
+    ubyte[] GetSfixed64ByteArray(
+        long field_index,
+        long integer
+        )
+    {
+        ubyte[]
+            byte_array;
+
+        byte_array = new ubyte[ 1 ];
+        byte_array[ 0 ] = ( 1 | ( field_index << 3 ) ).to!ubyte();
+        byte_array ~= ( cast( ubyte * )&integer )[ 0 .. 8 ];
+
+        return byte_array;
+    }
+
+    // ~~
+
+    ubyte[] GetSfixed32ByteArray(
+        long field_index,
+        int integer
+        )
+    {
+        ubyte[]
+            byte_array;
+
+        byte_array = new ubyte[ 1 ];
+        byte_array[ 0 ] = ( 5 | ( field_index << 3 ) ).to!ubyte();
+        byte_array ~= ( cast( ubyte * )&integer )[ 0 .. 4 ];
+
+        return byte_array;
+    }
+
+    // ~~
+
+    ubyte[] GetDoubleByteArray(
+        long field_index,
+        double real_
+        )
+    {
+        ubyte[]
+            byte_array;
+
+        byte_array = new ubyte[ 1 ];
+        byte_array[ 0 ] = ( 1 | ( field_index << 3 ) ).to!ubyte();
+        byte_array ~= ( cast( ubyte * )&real_ )[ 0 .. 8 ];
+
+        return byte_array;
+    }
+
+    // ~~
+
+    ubyte[] GetFloatByteArray(
+        long field_index,
+        float real_
+        )
+    {
+        ubyte[]
+            byte_array;
+
+        byte_array = new ubyte[ 1 ];
+        byte_array[ 0 ] = ( 5 | ( field_index << 3 ) ).to!ubyte();
+        byte_array ~= ( cast( ubyte * )&real_ )[ 0 .. 4 ];
+
+        return byte_array;
+    }
+
+    // ~~
+
+    ubyte[] GetBytesByteArray(
+        long field_index,
+        ubyte[] bytes
+        )
+    {
+        ubyte[]
+            byte_array;
+
+        byte_array = GetUint64ByteArray( field_index, bytes.length ) ~ bytes;
+        byte_array[ 0 ] |= 2;
+
+        return byte_array;
+    }
+
+    // ~~
+
+    ubyte[] GetStringByteArray(
+        long field_index,
+        string text
+        )
+    {
+        return GetBytesByteArray( field_index, cast( ubyte[] )text );
+    }
+
+    // -- OPERATIONS
+
+    void Pack(
+        )
+    {
+        ubyte[]
+            byte_array;
+
+        if ( SubMessageArray.length > 0 )
+        {
+            foreach ( sub_message; SubMessageArray )
+            {
+                sub_message.Pack();
+
+                byte_array ~= sub_message.ByteArray;
+            }
+
+            if ( FieldIndex == 0 )
+            {
+                ByteArray = byte_array;
+            }
+            else
+            {
+                ByteArray = GetBytesByteArray( FieldIndex, byte_array );
+            }
+        }
+    }
+
+    // ~~
+
+    ubyte[] GetPackedByteArray(
+        )
+    {
+        Pack();
+
+        return ByteArray;
+    }
+
+    // ~~
+
+    void AddMessage(
+        MESSAGE message
+        )
+    {
+        SubMessageArray ~= message;
+    }
+
+    // ~~
+
+    void AddMessage(
+        string name,
+        long field_index,
+        MESSAGE_TYPE message_type,
+        ubyte[] byte_array
+        )
+    {
+        AddMessage( new MESSAGE( name, field_index, message_type, byte_array ) );
+    }
+
+    // ~~
+
+    void AddUint64(
+        string name,
+        long field_index,
+        ulong natural
+        )
+    {
+        AddMessage( name, field_index, MESSAGE_TYPE.Uint64, GetUint64ByteArray( field_index, natural ) );
+    }
+
+    // ~~
+
+    void AddUint32(
+        string name,
+        long field_index,
+        uint natural
+        )
+    {
+        AddMessage( name, field_index, MESSAGE_TYPE.Uint32, GetUint32ByteArray( field_index, natural ) );
+    }
+
+    // ~~
+
+    void AddInt64(
+        string name,
+        long field_index,
+        long integer
+        )
+    {
+        AddMessage( name, field_index, MESSAGE_TYPE.Int64, GetInt64ByteArray( field_index, integer ) );
+    }
+
+    // ~~
+
+    void AddInt32(
+        string name,
+        long field_index,
+        int integer
+        )
+    {
+        AddMessage( name, field_index, MESSAGE_TYPE.Int32, GetInt32ByteArray( field_index, integer ) );
+    }
+
+    // ~~
+
+    void AddSint64(
+        string name,
+        long field_index,
+        long integer
+        )
+    {
+        AddMessage( name, field_index, MESSAGE_TYPE.Sint64, GetSint64ByteArray( field_index, integer ) );
+    }
+
+    // ~~
+
+    void AddSint32(
+        string name,
+        long field_index,
+        int integer
+        )
+    {
+        AddMessage( name, field_index, MESSAGE_TYPE.Sint32, GetSint32ByteArray( field_index, integer ) );
+    }
+
+    // ~~
+
+    void AddDouble(
+        string name,
+        long field_index,
+        double real_
+        )
+    {
+        AddMessage( name, field_index, MESSAGE_TYPE.Double, GetDoubleByteArray( field_index, real_ ) );
+    }
+
+    // ~~
+
+    void AddFloat(
+        string name,
+        long field_index,
+        float real_
+        )
+    {
+        AddMessage( name, field_index, MESSAGE_TYPE.Float, GetFloatByteArray( field_index, real_ ) );
+    }
+
+    // ~~
+
+    void AddBytes(
+        string name,
+        long field_index,
+        ubyte[] bytes
+        )
+    {
+        AddMessage( name, field_index, MESSAGE_TYPE.Bytes, GetBytesByteArray( field_index, bytes ) );
+    }
+
+    // ~~
+
+    void AddString(
+        string name,
+        long field_index,
+        string text
+        )
+    {
+        AddMessage( name, field_index, MESSAGE_TYPE.String, GetStringByteArray( field_index, text ) );
+    }
+}
+
+// ~~
+
 class COLUMN
 {
     // -- ATTRIBUTES
@@ -104,6 +558,28 @@ class CARD
     }
 
     // -- INQUIRIES
+
+    PARAMETER GetParameter(
+        string parameter_name
+        )
+    {
+        foreach ( parameter; ParameterArray )
+        {
+            if ( parameter.Name == parameter_name )
+            {
+                return parameter;
+            }
+        }
+
+        return null;
+    }
+
+    bool HasParameter(
+        string parameter_name
+        )
+    {
+        return GetParameter( parameter_name ) !is null;
+    }
 
     string GetCsvLine(
         )
@@ -201,6 +677,190 @@ class COLLECTION
         RevlogTable;
     CARD[]
         CardArray;
+
+    // -- INQUIRIES
+
+    void WriteCsvFile(
+        )
+    {
+        string
+            csv_file_path,
+            csv_file_text;
+
+        csv_file_text = "";
+
+        foreach ( card; Collection.CardArray )
+        {
+            csv_file_text ~= card.GetCsvLine() ~ "\n";
+        }
+
+        csv_file_path = OutputFolderPath ~ "collection.csv";
+        writeln( "Writing file : " ~ csv_file_path );
+
+        csv_file_path.write( csv_file_text );
+    }
+
+    // ~~
+
+    ubyte[] GetImageByteArray(
+        CARD card
+        )
+    {
+        return cast( ubyte[] )"JFIF";
+    }
+
+    // ~~
+
+    ubyte[] GetMediaByteArray(
+        CARD card
+        )
+    {
+        ubyte[]
+            image_byte_array,
+            media_byte_array;
+        uint
+            image_count,
+            image_size,
+            image_type;
+
+        image_count = 1;
+        image_size = 0;
+        image_type = 0;
+        image_byte_array = GetImageByteArray( card );
+
+        media_byte_array ~= ( cast( ubyte * )&image_count )[ 0 .. 4 ];
+        media_byte_array ~= ( cast( ubyte * )&image_size )[ 0 .. 4 ];
+        media_byte_array ~= ( cast( ubyte * )&image_type )[ 0 .. 4 ];
+        media_byte_array ~= image_byte_array;
+
+        return media_byte_array;
+    }
+    // ~~
+
+    MESSAGE GetWordMessage(
+        string name,
+        long field_index,
+        CARD card
+        )
+    {
+        MESSAGE
+            word_message;
+
+        word_message = new MESSAGE( name, field_index );
+        word_message.AddInt64( "id", 1, -1 );
+        word_message.AddString( "word", 2, "" );
+        word_message.AddString( "transc", 3, "" );
+        word_message.AddString( "sample", 4, "" );
+        word_message.AddString( "comment", 5, "" );
+        word_message.AddBytes( "image", 6, GetImageByteArray( card ) );
+        word_message.AddString( "gender", 7, "" );
+
+        return word_message;
+    }
+
+    // ~~
+
+    MESSAGE GetMediaMessage(
+        string name,
+        long field_index,
+        CARD card
+        )
+    {
+        MESSAGE
+            media_message;
+
+        media_message = new MESSAGE( name, field_index );
+        media_message.AddInt64( "id", 1, -1 );
+        media_message.AddBytes( "values", 2, GetMediaByteArray( card ) );
+        media_message.AddString( "types", 3, "0" );
+
+        return media_message;
+    }
+
+    // ~~
+
+    MESSAGE GetRecordMessage(
+        string name,
+        long field_index,
+        CARD card
+        )
+    {
+        MESSAGE
+            record_message;
+
+        record_message = new MESSAGE( name, field_index );
+        record_message.AddInt64( "id", 1, -1 );
+        record_message.AddInt64( "creation_date", 2, 1 );
+        record_message.AddInt64( "last_update_date", 3, 1 );
+        record_message.AddMessage( GetWordMessage( "words_1", 4, card ) );
+        record_message.AddMessage( GetWordMessage( "words_2", 5, card ) );
+
+        if ( card.HasParameter( "image" ) )
+        {
+            record_message.AddMessage( GetMediaMessage( "media", 8, card ) );
+        }
+
+        return record_message;
+    }
+
+    // ~~
+
+    MESSAGE GetBaseMessage(
+        string name,
+        long field_index
+        )
+    {
+        MESSAGE
+            base_message;
+
+        base_message = new MESSAGE( name, field_index );
+        base_message.AddInt32( "id", 1, -1 );
+        base_message.AddInt64( "creation_date", 2, 1 );
+        base_message.AddString( "lang_names_1", 3, "" );
+        base_message.AddString( "lang_names_2", 4, "" );
+        base_message.AddInt32( "lang_ids_1", 5, 1 );
+        base_message.AddInt32( "lang_ids_2", 6, 2 );
+        base_message.AddString( "progress", 11, "" );
+        base_message.AddString( "quality", 12, "" );
+        base_message.AddInt64( "last_update_date", 13, 1 );
+        base_message.AddInt64( "last_statistic_update_date", 14, 1 );
+
+        foreach ( card; Collection.CardArray )
+        {
+            base_message.AddMessage( GetRecordMessage( "records", 15, card ) );
+        }
+
+        return base_message;
+    }
+
+    // ~~
+
+    MESSAGE GetDatabaseMessage(
+        )
+    {
+        MESSAGE
+            database_message;
+
+        database_message = new MESSAGE();
+        database_message.AddMessage( GetBaseMessage( "bases", 1 ) );
+        database_message.AddInt32( "version", 6, 3 );
+
+        return database_message;
+    }
+
+    // ~~
+
+    void WriteLxfFile(
+        )
+    {
+        string
+            lxf_file_path;
+
+        lxf_file_path = OutputFolderPath ~ "collection.lxf";
+        writeln( "Writing file : " ~ lxf_file_path );
+
+        lxf_file_path.write( GetDatabaseMessage().GetPackedByteArray() );
+    }
 
     // -- OPERATIONS
 
@@ -334,34 +994,13 @@ class COLLECTION
         RenameMediaFiles();
         ParseCollection();
     }
-
-    // ~~
-
-    void WriteCsvFile(
-        )
-    {
-        string
-            csv_file_path,
-            csv_file_text;
-
-        csv_file_text = "";
-
-        foreach ( card; Collection.CardArray )
-        {
-            csv_file_text ~= card.GetCsvLine() ~ "\n";
-        }
-
-        csv_file_path = OutputFolderPath ~ "collection.csv";
-        writeln( "Writing file : " ~ csv_file_path );
-
-        csv_file_path.write( csv_file_text );
-    }
 }
 
 // -- VARIABLES
 
 bool
     CsvOptionIsEnabled,
+    LxfOptionIsEnabled,
     TrimOptionIsEnabled;
 string
     ApkgFilePath,
@@ -500,6 +1139,7 @@ void main(
     TrimOptionIsEnabled = false;
     CsvOptionIsEnabled = false;
     CsvLineFormat = "";
+    LxfOptionIsEnabled = false;
 
     while ( argument_array.length >= 1
             && argument_array[ 0 ].startsWith( "--" ) )
@@ -527,6 +1167,10 @@ void main(
 
             argument_array = argument_array[ 1 .. $ ];
         }
+        else if ( option == "--lxf" )
+        {
+            LxfOptionIsEnabled = true;
+        }
         else
         {
             Abort( "Invalid option : " ~ option );
@@ -547,6 +1191,7 @@ void main(
         writeln( "    --filter \"filter\"" );
         writeln( "    --trim" );
         writeln( "    --csv \"format\"" );
+        writeln( "    --lxf" );
         writeln( "Example :" );
         writeln( "    decker \"spanish_vocabulary.apkg\" \"SPANISH_VOCABULARY/\"" );
         writeln( "    decker --field \"<img src=\\\"{{image}}\\\">§{{spanish}}<br/><i>{{english}}</i>\" --trim \"spanish_vocabulary.apkg\" \"SPANISH_VOCABULARY/\"" );
