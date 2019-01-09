@@ -2,7 +2,7 @@
 
 # Decker
 
-Anki deck converter.
+Flashcard deck converter.
 
 ## Installation
 
@@ -18,7 +18,7 @@ dmd -m64 decker.d -L-ldl -L/usr/lib/x86_64-linux-gnu/libsqlite3.a
 ## Command line
 
 ```bash
-decker [options] apkg_file_path OUTPUT_FOLDER/
+decker [options] deck_file_path OUTPUT_FOLDER/
 ```
 
 ## Options
@@ -35,19 +35,19 @@ decker [options] apkg_file_path OUTPUT_FOLDER/
 decker "spanish_vocabulary.apkg" "SPANISH_VOCABULARY/"
 ```
 
-Extracts the Anki file content into the output folder.
+Extracts the APKG file content into the output folder.
 
 ```bash
-decker --fields "<img src=\"{{image}}\">§{{spanish}}<br/><i>{{english}}</i>" --trim "spanish_vocabulary.apkg" "SPANISH_VOCABULARY/"
+decker --fields "<img src=\"{{image}}\">§{{spanish}}<br/><i>{{english}}</i>" --trim --dump --verbose "spanish_vocabulary.apkg" "SPANISH_VOCABULARY/"
 ```
 
-Extracts the Anki file content and its card data into the output folder.
+Extracts the APKG file content and its card data into the output folder.
 
 ```bash
-decker --fields "<img src=\"{{image}}\">§{{spanish}}<br/><i>{{english}}</i>" --trim --csv "{{spanish}}|{{english}}|{{image}}" "spanish_vocabulary.apkg" "SPANISH_VOCABULARY/"
+decker --fields "<img src=\"{{image}}\">§{{spanish}}<br/><i>{{english}}</i>" --trim --csv "{{spanish}}|{{english}}|{{image}}" --dump --verbose "spanish_vocabulary.apkg" "SPANISH_VOCABULARY/"
 ```
 
-Extracts the Anki file content and its card data into the output folder, and generates a CSV file.
+Extracts the APKG file content and its card data into the output folder, then generates a CSV file.
 
 ## Version
 

@@ -6,7 +6,7 @@ import std.conv;
 import std.digest.crc;
 import std.file : read, readText, rename, write;
 import std.json;
-import std.stdio : writefln, writeln;
+import std.stdio : writeln;
 import std.string : indexOf, replace, split, startsWith, strip, toStringz;
 import std.zip;
 
@@ -79,18 +79,18 @@ class MESSAGE
             byte_count;
 
         byte_array = new ubyte[ 11 ];
-        byte_array[ 0 ] = ( field_index << 3 ).to!ubyte();
+        byte_array[ 0 ] = cast( ubyte )( field_index << 3 );
         byte_count = 1;
 
         do
         {
-            byte_array[ byte_count ] = ( natural & 127 ).to!ubyte();
+            byte_array[ byte_count ] = 128 | cast( ubyte )( natural & 127 );
             natural >>= 7;
             ++byte_count;
         }
         while ( natural != 0 );
 
-        byte_array[ byte_count - 1 ] |= 128;
+        byte_array[ byte_count - 1 ] &= 127;
 
         return byte_array[ 0 .. byte_count ];
     }
@@ -102,7 +102,7 @@ class MESSAGE
         uint natural
         )
     {
-        return GetUint64ByteArray( field_index, natural.to!ulong() );
+        return GetUint64ByteArray( field_index, cast( ulong )natural );
     }
 
     // ~~
@@ -112,7 +112,7 @@ class MESSAGE
         long integer
         )
     {
-        return GetUint64ByteArray( field_index, integer.to!ulong() );
+        return GetUint64ByteArray( field_index, cast ( ulong )integer );
     }
 
     // ~~
@@ -122,7 +122,7 @@ class MESSAGE
         int integer
         )
     {
-        return GetInt64ByteArray( field_index, integer.to!long() );
+        return GetInt64ByteArray( field_index, cast( long )integer );
     }
 
     // ~~
@@ -135,7 +135,7 @@ class MESSAGE
         ulong
             natural;
 
-        natural = integer.to!ulong();
+        natural = cast( ulong )integer;
 
         return GetUint64ByteArray( field_index, ( natural << 1 ) ^ ( natural >> 63 ) );
     }
@@ -150,7 +150,7 @@ class MESSAGE
         uint
             natural;
 
-        natural = integer.to!uint();
+        natural = cast( uint )integer;
 
         return GetUint32ByteArray( field_index, ( natural << 1 ) ^ ( natural >> 31 ) );
     }
@@ -177,7 +177,7 @@ class MESSAGE
             byte_array;
 
         byte_array = new ubyte[ 1 ];
-        byte_array[ 0 ] = ( 1 | ( field_index << 3 ) ).to!ubyte();
+        byte_array[ 0 ] = cast( ubyte )( 1 | ( field_index << 3 ) );
         byte_array ~= ( cast( ubyte * )&natural )[ 0 .. 8 ];
 
         return byte_array;
@@ -194,7 +194,7 @@ class MESSAGE
             byte_array;
 
         byte_array = new ubyte[ 1 ];
-        byte_array[ 0 ] = ( 5 | ( field_index << 3 ) ).to!ubyte();
+        byte_array[ 0 ] = cast( ubyte )( 5 | ( field_index << 3 ) );
         byte_array ~= ( cast( ubyte * )&natural )[ 0 .. 4 ];
 
         return byte_array;
@@ -211,7 +211,7 @@ class MESSAGE
             byte_array;
 
         byte_array = new ubyte[ 1 ];
-        byte_array[ 0 ] = ( 1 | ( field_index << 3 ) ).to!ubyte();
+        byte_array[ 0 ] = cast( ubyte )( 1 | ( field_index << 3 ) );
         byte_array ~= ( cast( ubyte * )&integer )[ 0 .. 8 ];
 
         return byte_array;
@@ -228,7 +228,7 @@ class MESSAGE
             byte_array;
 
         byte_array = new ubyte[ 1 ];
-        byte_array[ 0 ] = ( 5 | ( field_index << 3 ) ).to!ubyte();
+        byte_array[ 0 ] = cast( ubyte )( 5 | ( field_index << 3 ) );
         byte_array ~= ( cast( ubyte * )&integer )[ 0 .. 4 ];
 
         return byte_array;
@@ -245,7 +245,7 @@ class MESSAGE
             byte_array;
 
         byte_array = new ubyte[ 1 ];
-        byte_array[ 0 ] = ( 1 | ( field_index << 3 ) ).to!ubyte();
+        byte_array[ 0 ] = cast( ubyte )( 1 | ( field_index << 3 ) );
         byte_array ~= ( cast( ubyte * )&real_ )[ 0 .. 8 ];
 
         return byte_array;
@@ -262,7 +262,7 @@ class MESSAGE
             byte_array;
 
         byte_array = new ubyte[ 1 ];
-        byte_array[ 0 ] = ( 5 | ( field_index << 3 ) ).to!ubyte();
+        byte_array[ 0 ] = cast( ubyte )( 5 | ( field_index << 3 ) );
         byte_array ~= ( cast( ubyte * )&real_ )[ 0 .. 4 ];
 
         return byte_array;
@@ -292,6 +292,112 @@ class MESSAGE
         )
     {
         return GetBytesByteArray( field_index, cast( ubyte[] )text );
+    }
+
+    // ~~
+
+    ulong GetNatural(
+        )
+    {
+        long
+            byte_index;
+        ulong
+            bit_index,
+            natural;
+
+        natural = 0;
+
+        for ( byte_index = 1;
+              byte_index < ByteArray.length;
+              ++byte_index )
+        {
+            bit_index = ( byte_index - 1 ) * 7;
+
+            natural |= ( cast( ulong )( ByteArray[ byte_index ] & 127 ) ) << bit_index;
+
+            if ( ( ByteArray[ byte_index ] & 128 ) == 0 )
+            {
+                break;
+            }
+        }
+
+        return natural;
+    }
+
+    // ~~
+
+    string GetValueText(
+        )
+    {
+        if ( Type == MESSAGE_TYPE.Uint64
+             || Type == MESSAGE_TYPE.Uint32 )
+        {
+            return GetNatural().to!string();
+        }
+        else if ( Type == MESSAGE_TYPE.Int64 )
+        {
+            return ( cast( long )GetNatural() ).to!string();
+        }
+        else if ( Type == MESSAGE_TYPE.Int32 )
+        {
+            return ( cast( int )GetNatural() ).to!string();
+        }
+        else if ( Type == MESSAGE_TYPE.String )
+        {
+            return ( cast( char[] )ByteArray[ $ - GetNatural() .. $ ] ).to!string().GetQuotedText();
+        }
+        else
+        {
+            return "?";
+        }
+    }
+
+    // ~~
+
+    string GetText(
+        long indentation_count = -1
+        )
+    {
+        long
+            indentation_index;
+        string
+            indentation_text,
+            text;
+
+        for ( indentation_index = 0;
+              indentation_index < indentation_count;
+              ++indentation_index )
+        {
+            indentation_text ~= "  ";
+        }
+
+        if ( indentation_count >= 0 )
+        {
+
+            text ~= indentation_text ~ FieldIndex.to!string();
+
+            if ( SubMessageArray.length > 0 )
+            {
+                text ~= " { (" ~ Name ~ ")\n";
+            }
+            else
+            {
+                text ~= ": " ~ GetValueText() ~ " " ~ ByteArray.to!string() ~ " (" ~ Name ~ ")\n";
+            }
+        }
+
+        foreach ( sub_message; SubMessageArray )
+        {
+            text ~= sub_message.GetText( indentation_count + 1 );
+        }
+
+        if ( indentation_count >= 0
+             && SubMessageArray.length > 0 )
+        {
+            text ~= indentation_text ~ "}\n";
+        }
+
+        return text;
     }
 
     // -- OPERATIONS
@@ -324,7 +430,7 @@ class MESSAGE
 
     // ~~
 
-    ubyte[] GetPackedByteArray(
+    ubyte[] GetByteArray(
         )
     {
         Pack();
@@ -615,7 +721,7 @@ class CARD
         PARAMETER
             parameter;
 
-        LogLine( field_text.GetQuotedText(), true );
+        DumpLine( field_text.GetQuotedText(), true );
 
         part_array = FieldFilter.replace( "{{", "\x1F" ).replace( "}}", "\x1F" ).split( "\x1F" );
 
@@ -653,7 +759,7 @@ class CARD
                 parameter_value = parameter_value.strip();
             }
 
-            LogLine( "    " ~ parameter_name ~ " : " ~ parameter_value.GetQuotedText(), true );
+            DumpLine( "    " ~ parameter_name ~ " : " ~ parameter_value.GetQuotedText(), true );
 
             parameter = new PARAMETER( parameter_name, parameter_value );
             ParameterArray ~= parameter;
@@ -752,7 +858,6 @@ class COLLECTION
         word_message.AddString( "transc", 3, "" );
         word_message.AddString( "sample", 4, "" );
         word_message.AddString( "comment", 5, "" );
-        word_message.AddBytes( "image", 6, GetImageByteArray( card ) );
         word_message.AddString( "gender", 7, "" );
 
         return word_message;
@@ -795,7 +900,7 @@ class COLLECTION
         record_message.AddMessage( GetWordMessage( "words_1", 4, card ) );
         record_message.AddMessage( GetWordMessage( "words_2", 5, card ) );
 
-        if ( card.HasParameter( "image" ) )
+        if ( card.HasParameter( "{{image}}" ) )
         {
             record_message.AddMessage( GetMediaMessage( "media", 8, card ) );
         }
@@ -820,8 +925,8 @@ class COLLECTION
         base_message.AddString( "lang_names_2", 4, "" );
         base_message.AddInt32( "lang_ids_1", 5, 1 );
         base_message.AddInt32( "lang_ids_2", 6, 2 );
-        base_message.AddString( "progress", 11, "" );
-        base_message.AddString( "quality", 12, "" );
+        base_message.AddString( "progress", 11, "0.0" );
+        base_message.AddString( "quality", 12, "0.0" );
         base_message.AddInt64( "last_update_date", 13, 1 );
         base_message.AddInt64( "last_statistic_update_date", 14, 1 );
 
@@ -843,7 +948,7 @@ class COLLECTION
 
         database_message = new MESSAGE();
         database_message.AddMessage( GetBaseMessage( "bases", 1 ) );
-        database_message.AddInt32( "version", 6, 3 );
+        database_message.AddInt32( "version", 6, 4 );
 
         return database_message;
     }
@@ -854,12 +959,25 @@ class COLLECTION
         )
     {
         string
+            dump_file_path,
             lxf_file_path;
+        MESSAGE
+            database_message;
+
+        database_message = GetDatabaseMessage();
 
         lxf_file_path = OutputFolderPath ~ "collection.lxf";
         writeln( "Writing file : " ~ lxf_file_path );
 
-        lxf_file_path.write( GetDatabaseMessage().GetPackedByteArray() );
+        lxf_file_path.write( database_message.GetByteArray() );
+
+        if ( DumpOptionIsEnabled )
+        {
+            dump_file_path = OutputFolderPath ~ "collection_lexilize.txt";
+            writeln( "Writing file : " ~ dump_file_path );
+
+            dump_file_path.write( database_message.GetText() );
+        }
     }
 
     // -- OPERATIONS
@@ -935,7 +1053,7 @@ class COLLECTION
         sqlite3 *
             database;
         string
-            log_file_path,
+            dump_file_path,
             database_file_path;
         CARD
             card;
@@ -946,7 +1064,7 @@ class COLLECTION
         result = sqlite3_open( toStringz( database_file_path ), &database );
         msg = null;
 
-        LogText = "";
+        DumpText = "";
 
         ColTable = new TABLE( "col" );
         NotesTable = new TABLE( "notes" );
@@ -971,6 +1089,16 @@ class COLLECTION
 
         sqlite3_close(database);
 
+        if ( DumpOptionIsEnabled )
+        {
+            dump_file_path = OutputFolderPath ~ "collection_anki_tables.txt";
+            writeln( "Writing file : " ~ dump_file_path );
+
+            dump_file_path.write( DumpText );
+        }
+
+        DumpText = "";
+
         foreach ( row; NotesTable.RowArray )
         {
             field_text = row.ColumnMap[ "flds" ].Value.replace( "\x1F", "§" );
@@ -979,10 +1107,13 @@ class COLLECTION
             CardArray ~= card;
         }
 
-        log_file_path = OutputFolderPath ~ "collection.log";
-        writeln( "Writing file : " ~ log_file_path );
+        if ( DumpOptionIsEnabled )
+        {
+            dump_file_path = OutputFolderPath ~ "collection_anki_cards.txt";
+            writeln( "Writing file : " ~ dump_file_path );
 
-        log_file_path.write( LogText );
+            dump_file_path.write( DumpText );
+        }
     }
 
     // ~~
@@ -1000,14 +1131,16 @@ class COLLECTION
 
 bool
     CsvOptionIsEnabled,
+    DumpOptionIsEnabled,
     LxfOptionIsEnabled,
-    TrimOptionIsEnabled;
+    TrimOptionIsEnabled,
+    VerboseOptionIsEnabled;
 string
     ApkgFilePath,
     CsvLineFormat,
     FieldFilter,
     OutputFolderPath,
-    LogText;
+    DumpText;
 COLLECTION
     Collection;
 TABLE
@@ -1052,14 +1185,15 @@ string GetQuotedText(
 
 // ~~
 
-void LogLine(
+void DumpLine(
     string line,
     bool line_is_printed = false
     )
 {
-    LogText ~= line ~ "\n";
+    DumpText ~= line ~ "\n";
 
-    if ( line_is_printed )
+    if ( VerboseOptionIsEnabled
+         && line_is_printed )
     {
         writeln( line );
     }
@@ -1085,7 +1219,7 @@ int AddRow(
     ROW
         row;
 
-    LogLine( Table.Name ~ "[" ~ Table.RowArray.length.to!string() ~ "]" );
+    DumpLine( Table.Name ~ "[" ~ Table.RowArray.length.to!string() ~ "]" );
 
     row = new ROW();
 
@@ -1098,7 +1232,7 @@ int AddRow(
         ++name_array;
         ++value_array;
 
-        LogLine( "    " ~ column.Name ~ " : " ~ column.Value.GetQuotedText() );
+        DumpLine( "    " ~ column.Name ~ " : " ~ column.Value.GetQuotedText() );
 
         row.ColumnMap[ column.Name ] = column;
     }
@@ -1120,6 +1254,11 @@ void ProcessCollection(
     {
         Collection.WriteCsvFile();
     }
+
+    if ( LxfOptionIsEnabled )
+    {
+        Collection.WriteLxfFile();
+    }
 }
 
 // ~~
@@ -1140,6 +1279,8 @@ void main(
     CsvOptionIsEnabled = false;
     CsvLineFormat = "";
     LxfOptionIsEnabled = false;
+    DumpOptionIsEnabled = false;
+    VerboseOptionIsEnabled = false;
 
     while ( argument_array.length >= 1
             && argument_array[ 0 ].startsWith( "--" ) )
@@ -1171,6 +1312,14 @@ void main(
         {
             LxfOptionIsEnabled = true;
         }
+        else if ( option == "--dump" )
+        {
+            DumpOptionIsEnabled = true;
+        }
+        else if ( option == "--verbose" )
+        {
+            VerboseOptionIsEnabled = true;
+        }
         else
         {
             Abort( "Invalid option : " ~ option );
@@ -1192,6 +1341,7 @@ void main(
         writeln( "    --trim" );
         writeln( "    --csv \"format\"" );
         writeln( "    --lxf" );
+        writeln( "    --verbose" );
         writeln( "Example :" );
         writeln( "    decker \"spanish_vocabulary.apkg\" \"SPANISH_VOCABULARY/\"" );
         writeln( "    decker --field \"<img src=\\\"{{image}}\\\">§{{spanish}}<br/><i>{{english}}</i>\" --trim \"spanish_vocabulary.apkg\" \"SPANISH_VOCABULARY/\"" );
