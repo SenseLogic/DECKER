@@ -1341,6 +1341,7 @@ void main(
         writeln( "    --trim" );
         writeln( "    --csv \"format\"" );
         writeln( "    --lxf" );
+        writeln( "    --dump" );
         writeln( "    --verbose" );
         writeln( "Example :" );
         writeln( "    decker \"spanish_vocabulary.apkg\" \"SPANISH_VOCABULARY/\"" );

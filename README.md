@@ -27,6 +27,9 @@ decker [options] deck_file_path OUTPUT_FOLDER/
 --filter "filter" : extract the card parameters using this filter
 --trim : trim the card parameters
 --csv "format" : export a CSV file using this format
+--lexilize : export a LSF file
+--dump : dump the processing data
+--verbose : show the processing messages
 ```
 
 ### Examples
