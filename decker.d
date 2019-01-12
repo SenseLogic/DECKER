@@ -7,7 +7,7 @@ import std.digest.crc;
 import std.file : read, readText, rename, write;
 import std.json;
 import std.stdio : writeln;
-import std.string : indexOf, replace, split, startsWith, strip, toStringz;
+import std.string : endsWith, indexOf, replace, split, startsWith, strip, toStringz;
 import std.zip;
 
 // -- TYPES
@@ -657,10 +657,10 @@ class CARD
     // -- CONSTRUCTORS
 
     this(
-        string field_text
+        string card_text
         )
     {
-        ParseFieldText( field_text );
+        ParseText( card_text );
     }
 
     // -- INQUIRIES
@@ -680,6 +680,26 @@ class CARD
         return null;
     }
 
+    // ~~
+
+    string GetValue(
+        string parameter_name,
+        string default_value = ""
+        )
+    {
+        foreach ( parameter; ParameterArray )
+        {
+            if ( parameter.Name == parameter_name )
+            {
+                return parameter.Value;
+            }
+        }
+
+        return default_value;
+    }
+
+    // ~~
+
     bool HasParameter(
         string parameter_name
         )
@@ -687,13 +707,15 @@ class CARD
         return GetParameter( parameter_name ) !is null;
     }
 
+    // ~~
+
     string GetCsvLine(
         )
     {
         string
             csv_line;
 
-        csv_line = CsvLineFormat;
+        csv_line = OutputFormat;
 
         foreach ( parameter; ParameterArray )
         {
@@ -705,8 +727,8 @@ class CARD
 
     // -- OPERATIONS
 
-    void ParseFieldText(
-        string field_text
+    void ParseText(
+        string card_text
         )
     {
         long
@@ -715,42 +737,44 @@ class CARD
             parameter_name,
             parameter_prefix,
             parameter_suffix,
-            parameter_value;
+            parameter_value,
+            remaining_card_text;
         string[]
             part_array;
         PARAMETER
             parameter;
 
-        DumpLine( field_text.GetQuotedText(), true );
+        DumpLine( card_text.GetQuotedText(), true );
 
-        part_array = FieldFilter.replace( "{{", "\x1F" ).replace( "}}", "\x1F" ).split( "\x1F" );
+        remaining_card_text = card_text;
+        part_array = InputFormat.replace( "{{", "\x1F" ).replace( "}}", "\x1F" ).split( "\x1F" );
 
         while ( part_array.length >= 3
-                && field_text.startsWith( part_array[ 0 ] ) )
+                && remaining_card_text.startsWith( part_array[ 0 ] ) )
         {
             parameter_prefix = part_array[ 0 ];
             parameter_name = "{{" ~ part_array[ 1 ] ~ "}}";
             parameter_suffix = part_array[ 2 ];
 
-            field_text = field_text[ parameter_prefix.length .. $ ];
+            remaining_card_text = remaining_card_text[ parameter_prefix.length .. $ ];
 
             if ( parameter_suffix.length == 0 )
             {
-                parameter_value = field_text;
-                field_text = "";
+                parameter_value = remaining_card_text;
+                remaining_card_text = "";
             }
             else
             {
-                parameter_suffix_character_index = field_text.indexOf( parameter_suffix );
+                parameter_suffix_character_index = remaining_card_text.indexOf( parameter_suffix );
 
                 if ( parameter_suffix_character_index >= 0 )
                 {
-                    parameter_value = field_text[ 0 .. parameter_suffix_character_index ];
-                    field_text = field_text[ parameter_suffix_character_index .. $ ];
+                    parameter_value = remaining_card_text[ 0 .. parameter_suffix_character_index ];
+                    remaining_card_text = remaining_card_text[ parameter_suffix_character_index .. $ ];
                 }
                 else
                 {
-                    Abort( "Invalid field text" );
+                    Abort( "Invalid card text : " ~ card_text );
                 }
             }
 
@@ -846,7 +870,8 @@ class COLLECTION
     MESSAGE GetWordMessage(
         string name,
         long field_index,
-        CARD card
+        CARD card,
+        string prefix
         )
     {
         MESSAGE
@@ -854,11 +879,11 @@ class COLLECTION
 
         word_message = new MESSAGE( name, field_index );
         word_message.AddInt64( "id", 1, -1 );
-        word_message.AddString( "word", 2, "" );
-        word_message.AddString( "transc", 3, "" );
-        word_message.AddString( "sample", 4, "" );
-        word_message.AddString( "comment", 5, "" );
-        word_message.AddString( "gender", 7, "" );
+        word_message.AddString( "word", 2, card.GetValue( "{{" ~ prefix ~ "_word}}" ) );
+        word_message.AddString( "transc", 3, card.GetValue( "{{" ~ prefix ~ "_transcription}}" ) );
+        word_message.AddString( "sample", 4, card.GetValue( "{{" ~ prefix ~ "_sample}}" ) );
+        word_message.AddString( "comment", 5, card.GetValue( "{{" ~ prefix ~ "_comment}}" ) );
+        word_message.AddString( "gender", 7, card.GetValue( "{{" ~ prefix ~ "_gender}}" ) );
 
         return word_message;
     }
@@ -897,10 +922,10 @@ class COLLECTION
         record_message.AddInt64( "id", 1, -1 );
         record_message.AddInt64( "creation_date", 2, 1 );
         record_message.AddInt64( "last_update_date", 3, 1 );
-        record_message.AddMessage( GetWordMessage( "words_1", 4, card ) );
-        record_message.AddMessage( GetWordMessage( "words_2", 5, card ) );
+        record_message.AddMessage( GetWordMessage( "words_1", 4, card, "front" ) );
+        record_message.AddMessage( GetWordMessage( "words_2", 5, card, "back" ) );
 
-        if ( card.HasParameter( "{{image}}" ) )
+        if ( card.HasParameter( "{{front_image}}" ) )
         {
             record_message.AddMessage( GetMediaMessage( "media", 8, card ) );
         }
@@ -982,6 +1007,42 @@ class COLLECTION
 
     // -- OPERATIONS
 
+    void ReadCsvFile(
+        )
+    {
+        string
+            dump_file_path;
+        string[]
+            line_array;
+        CARD
+            card;
+
+        writeln( "Reading file : " ~ InputFilePath );
+
+        line_array = InputFilePath.readText().replace( "\r", "" ).split( "\n" );
+
+        DumpText = "";
+
+        foreach ( line; line_array )
+        {
+            if ( line.strip().length > 0 )
+            {
+                card = new CARD( line );
+                CardArray ~= card;
+            }
+        }
+
+        if ( DumpOptionIsEnabled )
+        {
+            dump_file_path = OutputFolderPath ~ "collection_csv_cards.txt";
+            writeln( "Writing file : " ~ dump_file_path );
+
+            dump_file_path.write( DumpText );
+        }
+    }
+
+    // ~~
+
     void ExtractFiles(
         )
     {
@@ -990,9 +1051,9 @@ class COLLECTION
         ZipArchive
             zip_archive;
 
-        writeln( "Reading file : " ~ ApkgFilePath );
+        writeln( "Reading file : " ~ InputFilePath );
 
-        zip_archive = new ZipArchive( ApkgFilePath.read() );
+        zip_archive = new ZipArchive( InputFilePath.read() );
 
         foreach ( file_name, archive_member; zip_archive.directory )
         {
@@ -1015,8 +1076,8 @@ class COLLECTION
         string
             media_file_path,
             media_file_text,
-            source_file_path,
-            target_file_path;
+            front_file_path,
+            back_file_path;
         string[]
             line_array;
         JSONValue
@@ -1031,11 +1092,11 @@ class COLLECTION
 
         foreach ( string key, value; json_value )
         {
-            source_file_path = OutputFolderPath ~ key;
-            target_file_path = OutputFolderPath ~ value.str;
-            writeln( "Renaming file : " ~ source_file_path ~ " => " ~ target_file_path );
+            front_file_path = OutputFolderPath ~ key;
+            back_file_path = OutputFolderPath ~ value.str;
+            writeln( "Renaming file : " ~ front_file_path ~ " => " ~ back_file_path );
 
-            source_file_path.rename( target_file_path );
+            front_file_path.rename( back_file_path );
         }
     }
 
@@ -1049,7 +1110,7 @@ class COLLECTION
         int
             result;
         string
-            field_text;
+            card_text;
         sqlite3 *
             database;
         string
@@ -1101,9 +1162,9 @@ class COLLECTION
 
         foreach ( row; NotesTable.RowArray )
         {
-            field_text = row.ColumnMap[ "flds" ].Value.replace( "\x1F", "§" );
+            card_text = row.ColumnMap[ "flds" ].Value.replace( "\x1F", "§" );
 
-            card = new CARD( field_text );
+            card = new CARD( card_text );
             CardArray ~= card;
         }
 
@@ -1136,11 +1197,11 @@ bool
     TrimOptionIsEnabled,
     VerboseOptionIsEnabled;
 string
-    ApkgFilePath,
-    CsvLineFormat,
-    FieldFilter,
-    OutputFolderPath,
-    DumpText;
+    InputFilePath,
+    InputFormat,
+    DumpText,
+    OutputFormat,
+    OutputFolderPath;
 COLLECTION
     Collection;
 TABLE
@@ -1248,7 +1309,15 @@ void ProcessCollection(
     )
 {
     Collection = new COLLECTION();
-    Collection.ReadApkgFile();
+
+    if ( InputFilePath.endsWith( ".apkg" ) )
+    {
+        Collection.ReadApkgFile();
+    }
+    else if ( InputFilePath.endsWith( ".csv" ) )
+    {
+        Collection.ReadCsvFile();
+    }
 
     if ( CsvOptionIsEnabled )
     {
@@ -1272,12 +1341,12 @@ void main(
 
     argument_array = argument_array[ 1 .. $ ];
 
-    ApkgFilePath = "";
+    InputFilePath = "";
     OutputFolderPath = "";
-    FieldFilter = "";
+    InputFormat = "";
+    OutputFormat = "";
     TrimOptionIsEnabled = false;
     CsvOptionIsEnabled = false;
-    CsvLineFormat = "";
     LxfOptionIsEnabled = false;
     DumpOptionIsEnabled = false;
     VerboseOptionIsEnabled = false;
@@ -1289,10 +1358,17 @@ void main(
 
         argument_array = argument_array[ 1 .. $ ];
 
-        if ( option == "--filter"
+        if ( option == "--read"
              && argument_array.length >= 1 )
         {
-            FieldFilter = argument_array[ 0 ];
+            InputFormat = argument_array[ 0 ];
+
+            argument_array = argument_array[ 1 .. $ ];
+        }
+        else if ( option == "--write"
+                  && argument_array.length >= 1 )
+        {
+            OutputFormat = argument_array[ 0 ];
 
             argument_array = argument_array[ 1 .. $ ];
         }
@@ -1300,13 +1376,9 @@ void main(
         {
             TrimOptionIsEnabled = true;
         }
-        else if ( option == "--csv"
-                  && argument_array.length >= 1 )
+        else if ( option == "--csv" )
         {
             CsvOptionIsEnabled = true;
-            CsvLineFormat = argument_array[ 0 ];
-
-            argument_array = argument_array[ 1 .. $ ];
         }
         else if ( option == "--lxf" )
         {
@@ -1326,27 +1398,32 @@ void main(
         }
     }
 
-    if ( argument_array.length == 2 )
+    if ( argument_array.length == 2
+         && ( argument_array[ 0 ].endsWith( ".apkg" )
+              || argument_array[ 0 ].endsWith( ".csv" ) )
+         && argument_array[ 1 ].endsWith( '/' ) )
     {
-        ApkgFilePath = argument_array[ 0 ];
+        InputFilePath = argument_array[ 0 ];
         OutputFolderPath = argument_array[ 1 ];
 
         ProcessCollection();
     }
     else
     {
-        writeln( "Usage : decker [options] apkg_file_path OUTPUT_FOLDER/" );
+        writeln( "Usage : decker [options] input_file_path OUTPUT_FOLDER/" );
         writeln( "Options :" );
-        writeln( "    --filter \"filter\"" );
+        writeln( "    --read \"format\"" );
+        writeln( "    --write \"format\"" );
         writeln( "    --trim" );
-        writeln( "    --csv \"format\"" );
+        writeln( "    --csv" );
         writeln( "    --lxf" );
         writeln( "    --dump" );
         writeln( "    --verbose" );
         writeln( "Example :" );
         writeln( "    decker \"spanish_vocabulary.apkg\" \"SPANISH_VOCABULARY/\"" );
-        writeln( "    decker --field \"<img src=\\\"{{image}}\\\">§{{spanish}}<br/><i>{{english}}</i>\" --trim \"spanish_vocabulary.apkg\" \"SPANISH_VOCABULARY/\"" );
-        writeln( "    decker --field \"<img src=\\\"{{image}}\\\">§{{spanish}}<br/><i>{{english}}</i>\" --trim --csv \"{{spanish}}|{{english}}|{{image}}\" \"spanish_vocabulary.apkg\" \"SPANISH_VOCABULARY/\"" );
+        writeln( "    decker --read \"<img src=\\\"{{front_image}}\\\">§{{front_word}}<br/><i>{{back_word}}</i>\" --trim \"spanish_vocabulary.apkg\" \"SPANISH_VOCABULARY/\"" );
+        writeln( "    decker --read \"<img src=\\\"{{front_image}}\\\">§{{front_word}}<br/><i>{{back_word}}</i>\" --trim --csv -out \"{{front_word}}|{{back_word}}|{{front_image}}\" \"spanish_vocabulary.apkg\" \"SPANISH_VOCABULARY/\"" );
+        writeln( "    decker \"spanish_vocabulary.csv\" \"SPANISH_VOCABULARY/\" --trim --csv" );
 
         Abort( "Invalid arguments : " ~ argument_array.to!string() );
     }

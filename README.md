@@ -18,18 +18,38 @@ dmd -m64 decker.d -L-ldl -L/usr/lib/x86_64-linux-gnu/libsqlite3.a
 ## Command line
 
 ```bash
-decker [options] deck_file_path OUTPUT_FOLDER/
+decker [options] input_file_path.{apkg|csv} OUTPUT_FOLDER/
 ```
 
 ## Options
 
 ```
---filter "filter" : extract the card parameters using this filter
+--read "format" : read the cards using this input format
+--write "format" : write the cards using this output format
 --trim : trim the card parameters
---csv "format" : export a CSV file using this format
+--csv : export a CSV file
 --lexilize : export a LSF file
 --dump : dump the processing data
 --verbose : show the processing messages
+```
+
+## Parameters
+
+The following parameters can be exported into the LSF file :
+
+```
+{{front_image}}
+{{front_word}}
+{{front_transcription}}
+{{front_sample}}
+{{front_comment}}
+{{front_gender}}
+{{back_image}}
+{{back_word}}
+{{back_transcription}}
+{{back_sample}}
+{{back_comment}}
+{{back_gender}}
 ```
 
 ### Examples
@@ -41,13 +61,13 @@ decker "spanish_vocabulary.apkg" "SPANISH_VOCABULARY/"
 Extracts the APKG file content into the output folder.
 
 ```bash
-decker --fields "<img src=\"{{image}}\">§{{spanish}}<br/><i>{{english}}</i>" --trim --dump --verbose "spanish_vocabulary.apkg" "SPANISH_VOCABULARY/"
+decker --read "<img src=\"{{front_image}}\">§{{front_word}}<br/><i>{{back_word}}</i>" --trim --dump --verbose "spanish_vocabulary.apkg" "SPANISH_VOCABULARY/"
 ```
 
 Extracts the APKG file content and its card data into the output folder.
 
 ```bash
-decker --fields "<img src=\"{{image}}\">§{{spanish}}<br/><i>{{english}}</i>" --trim --csv "{{spanish}}|{{english}}|{{image}}" --dump --verbose "spanish_vocabulary.apkg" "SPANISH_VOCABULARY/"
+decker --read "<img src=\"{{front_image}}\">§{{front_word}}<br/><i>{{back_word}}</i>" --trim --csv --write "{{front_word}}|{{back_word}}|{{front_image}}" --dump --verbose "spanish_vocabulary.apkg" "SPANISH_VOCABULARY/"
 ```
 
 Extracts the APKG file content and its card data into the output folder, then generates a CSV file.
