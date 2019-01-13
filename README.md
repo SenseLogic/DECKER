@@ -4,6 +4,20 @@
 
 Flashcard deck converter.
 
+## Description
+
+Decker converts both textual and illustrated flashcard decks from one format to another.
+
+## Input formats
+
+*   CSV (.csv)
+*   Anki (.apkg)
+
+## Output formats
+
+*   CSV (.csv)
+*   Lexilize (.lxf)
+
 ## Installation
 
 Install the [DMD 2 compiler](https://dlang.org/download.html).
@@ -18,17 +32,17 @@ dmd -m64 decker.d -L-ldl -L/usr/lib/x86_64-linux-gnu/libsqlite3.a
 ## Command line
 
 ```bash
-decker [options] input_file_path.{apkg|csv} OUTPUT_FOLDER/
+decker [options] input_file_path output_file_path
 ```
 
 ## Options
 
 ```
---read "format" : read the cards using this input format
---write "format" : write the cards using this output format
+--input_folder INPUT_FOLDER/ : read media files from this folder
+--input_format "format" : read the cards using this input format
+--output_folder OUTPUT_FOLDER/ : write media files into this folder
+--output_format "format" : write the cards using this output format
 --trim : trim the card parameters
---csv : export a CSV file
---lexilize : export a LSF file
 --dump : dump the processing data
 --verbose : show the processing messages
 ```
@@ -44,6 +58,7 @@ The following parameters can be exported into the LSF file :
 {{front_sample}}
 {{front_comment}}
 {{front_gender}}
+
 {{back_image}}
 {{back_word}}
 {{back_transcription}}
@@ -55,22 +70,26 @@ The following parameters can be exported into the LSF file :
 ### Examples
 
 ```bash
-decker "spanish_vocabulary.apkg" "SPANISH_VOCABULARY/"
+decker --output_folder "SPANISH_VOCABULARY/" --dump --verbose "spanish_vocabulary.apkg"
 ```
 
-Extracts the APKG file content into the output folder.
+Extracts the Anki file content into the output folder.
 
 ```bash
-decker --read "<img src=\"{{front_image}}\">§{{front_word}}<br/><i>{{back_word}}</i>" --trim --dump --verbose "spanish_vocabulary.apkg" "SPANISH_VOCABULARY/"
+decker --input_format "<img src=\"{{front_image}}\">§{{front_word}}<br/><i>{{back_word}}</i>" --output_folder "SPANISH_VOCABULARY/" --trim --dump --verbose "spanish_vocabulary.apkg"
 ```
 
-Extracts the APKG file content and its card data into the output folder.
+Extracts the Anki file content and dump its card parameters.
 
 ```bash
 decker --read "<img src=\"{{front_image}}\">§{{front_word}}<br/><i>{{back_word}}</i>" --trim --csv --write "{{front_word}}|{{back_word}}|{{front_image}}" --dump --verbose "spanish_vocabulary.apkg" "SPANISH_VOCABULARY/"
 ```
 
-Extracts the APKG file content and its card data into the output folder, then generates a CSV file.
+Extracts the APKG file content, and generates a CSV file.
+
+## Limitations
+
+*   Only JPEG images can be used in Lexilize decks.
 
 ## Version
 

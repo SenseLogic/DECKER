@@ -814,7 +814,6 @@ class COLLECTION
         )
     {
         string
-            csv_file_path,
             csv_file_text;
 
         csv_file_text = "";
@@ -824,10 +823,9 @@ class COLLECTION
             csv_file_text ~= card.GetCsvLine() ~ "\n";
         }
 
-        csv_file_path = OutputFolderPath ~ "collection.csv";
-        writeln( "Writing file : " ~ csv_file_path );
+        writeln( "Writing file : " ~ OutputFilePath );
 
-        csv_file_path.write( csv_file_text );
+        OutputFilePath.write( csv_file_text );
     }
 
     // ~~
@@ -965,17 +963,17 @@ class COLLECTION
 
     // ~~
 
-    MESSAGE GetDatabaseMessage(
+    MESSAGE GetMessage(
         )
     {
         MESSAGE
-            database_message;
+            message;
 
-        database_message = new MESSAGE();
-        database_message.AddMessage( GetBaseMessage( "bases", 1 ) );
-        database_message.AddInt32( "version", 6, 4 );
+        message = new MESSAGE();
+        message.AddMessage( GetBaseMessage( "bases", 1 ) );
+        message.AddInt32( "version", 6, 4 );
 
-        return database_message;
+        return message;
     }
 
     // ~~
@@ -984,25 +982,23 @@ class COLLECTION
         )
     {
         string
-            dump_file_path,
-            lxf_file_path;
+            dump_file_path;
         MESSAGE
-            database_message;
+            message;
 
-        database_message = GetDatabaseMessage();
-
-        lxf_file_path = OutputFolderPath ~ "collection.lxf";
-        writeln( "Writing file : " ~ lxf_file_path );
-
-        lxf_file_path.write( database_message.GetByteArray() );
+        message = GetMessage();
 
         if ( DumpOptionIsEnabled )
         {
-            dump_file_path = OutputFolderPath ~ "collection_lexilize.txt";
+            dump_file_path = OutputFolderPath ~ "dump_lexilize.txt";
             writeln( "Writing file : " ~ dump_file_path );
 
-            dump_file_path.write( database_message.GetText() );
+            dump_file_path.write( message.GetText() );
         }
+
+        writeln( "Writing file : " ~ OutputFilePath );
+
+        OutputFilePath.write( message.GetByteArray() );
     }
 
     // -- OPERATIONS
@@ -1034,7 +1030,7 @@ class COLLECTION
 
         if ( DumpOptionIsEnabled )
         {
-            dump_file_path = OutputFolderPath ~ "collection_csv_cards.txt";
+            dump_file_path = OutputFolderPath ~ "dump_csv.txt";
             writeln( "Writing file : " ~ dump_file_path );
 
             dump_file_path.write( DumpText );
@@ -1152,7 +1148,7 @@ class COLLECTION
 
         if ( DumpOptionIsEnabled )
         {
-            dump_file_path = OutputFolderPath ~ "collection_anki_tables.txt";
+            dump_file_path = OutputFolderPath ~ "dump_anki_database.txt";
             writeln( "Writing file : " ~ dump_file_path );
 
             dump_file_path.write( DumpText );
@@ -1170,7 +1166,7 @@ class COLLECTION
 
         if ( DumpOptionIsEnabled )
         {
-            dump_file_path = OutputFolderPath ~ "collection_anki_cards.txt";
+            dump_file_path = OutputFolderPath ~ "dump_anki.txt";
             writeln( "Writing file : " ~ dump_file_path );
 
             dump_file_path.write( DumpText );
@@ -1191,15 +1187,15 @@ class COLLECTION
 // -- VARIABLES
 
 bool
-    CsvOptionIsEnabled,
     DumpOptionIsEnabled,
-    LxfOptionIsEnabled,
     TrimOptionIsEnabled,
     VerboseOptionIsEnabled;
 string
-    InputFilePath,
-    InputFormat,
     DumpText,
+    InputFilePath,
+    InputFolderPath,
+    InputFormat,
+    OutputFilePath,
     OutputFormat,
     OutputFolderPath;
 COLLECTION
@@ -1310,24 +1306,45 @@ void ProcessCollection(
 {
     Collection = new COLLECTION();
 
-    if ( InputFilePath.endsWith( ".apkg" ) )
-    {
-        Collection.ReadApkgFile();
-    }
-    else if ( InputFilePath.endsWith( ".csv" ) )
+    if ( InputFilePath.endsWith( ".csv" ) )
     {
         Collection.ReadCsvFile();
     }
+    else if ( InputFilePath.endsWith( ".apkg" ) )
+    {
+        Collection.ReadApkgFile();
+    }
 
-    if ( CsvOptionIsEnabled )
+    if ( OutputFilePath.endsWith( ".csv" ) )
     {
         Collection.WriteCsvFile();
     }
-
-    if ( LxfOptionIsEnabled )
+    else if ( OutputFilePath.endsWith( ".lxf" ) )
     {
         Collection.WriteLxfFile();
     }
+}
+
+// ~~
+
+bool HasValidInputExtension(
+    string input_file_path
+    )
+{
+    return
+         input_file_path.endsWith( ".csv" )
+         || input_file_path.endsWith( ".apkg" );
+}
+
+// ~~
+
+bool HasValidOutputExtension(
+    string output_file_path
+    )
+{
+    return
+         output_file_path.endsWith( ".csv" )
+         || output_file_path.endsWith( ".lxf" );
 }
 
 // ~~
@@ -1342,12 +1359,12 @@ void main(
     argument_array = argument_array[ 1 .. $ ];
 
     InputFilePath = "";
-    OutputFolderPath = "";
+    InputFolderPath = "";
     InputFormat = "";
+    OutputFilePath = "";
+    OutputFolderPath = "";
     OutputFormat = "";
     TrimOptionIsEnabled = false;
-    CsvOptionIsEnabled = false;
-    LxfOptionIsEnabled = false;
     DumpOptionIsEnabled = false;
     VerboseOptionIsEnabled = false;
 
@@ -1358,14 +1375,28 @@ void main(
 
         argument_array = argument_array[ 1 .. $ ];
 
-        if ( option == "--read"
+        if ( option == "--input_folder"
+             && argument_array.length >= 1 )
+        {
+            InputFolderPath = argument_array[ 0 ];
+
+            argument_array = argument_array[ 1 .. $ ];
+        }
+        else if ( option == "--input_format"
              && argument_array.length >= 1 )
         {
             InputFormat = argument_array[ 0 ];
 
             argument_array = argument_array[ 1 .. $ ];
         }
-        else if ( option == "--write"
+        else if ( option == "--output_folder"
+                  && argument_array.length >= 1 )
+        {
+            OutputFolderPath = argument_array[ 0 ];
+
+            argument_array = argument_array[ 1 .. $ ];
+        }
+        else if ( option == "--output_format"
                   && argument_array.length >= 1 )
         {
             OutputFormat = argument_array[ 0 ];
@@ -1375,14 +1406,6 @@ void main(
         else if ( option == "--trim" )
         {
             TrimOptionIsEnabled = true;
-        }
-        else if ( option == "--csv" )
-        {
-            CsvOptionIsEnabled = true;
-        }
-        else if ( option == "--lxf" )
-        {
-            LxfOptionIsEnabled = true;
         }
         else if ( option == "--dump" )
         {
@@ -1398,32 +1421,33 @@ void main(
         }
     }
 
-    if ( argument_array.length == 2
-         && ( argument_array[ 0 ].endsWith( ".apkg" )
-              || argument_array[ 0 ].endsWith( ".csv" ) )
-         && argument_array[ 1 ].endsWith( '/' ) )
+    if ( argument_array.length == 1
+         && argument_array[ 0 ].HasValidInputExtension() )
     {
         InputFilePath = argument_array[ 0 ];
-        OutputFolderPath = argument_array[ 1 ];
+
+        ProcessCollection();
+    }
+    else if ( argument_array.length == 2
+         && argument_array[ 0 ].HasValidInputExtension()
+         && argument_array[ 1 ].HasValidOutputExtension() )
+    {
+        InputFilePath = argument_array[ 0 ];
+        OutputFilePath = argument_array[ 1 ];
 
         ProcessCollection();
     }
     else
     {
-        writeln( "Usage : decker [options] input_file_path OUTPUT_FOLDER/" );
+        writeln( "Usage : decker [options] input_file_path output_file_path" );
         writeln( "Options :" );
-        writeln( "    --read \"format\"" );
-        writeln( "    --write \"format\"" );
+        writeln( "    --input_folder INPUT_FOLDER/" );
+        writeln( "    --input_format \"format\"" );
+        writeln( "    --output_folder OUTPUT_FOLDER/" );
+        writeln( "    --output_format \"format\"" );
         writeln( "    --trim" );
-        writeln( "    --csv" );
-        writeln( "    --lxf" );
         writeln( "    --dump" );
         writeln( "    --verbose" );
-        writeln( "Example :" );
-        writeln( "    decker \"spanish_vocabulary.apkg\" \"SPANISH_VOCABULARY/\"" );
-        writeln( "    decker --read \"<img src=\\\"{{front_image}}\\\">§{{front_word}}<br/><i>{{back_word}}</i>\" --trim \"spanish_vocabulary.apkg\" \"SPANISH_VOCABULARY/\"" );
-        writeln( "    decker --read \"<img src=\\\"{{front_image}}\\\">§{{front_word}}<br/><i>{{back_word}}</i>\" --trim --csv -out \"{{front_word}}|{{back_word}}|{{front_image}}\" \"spanish_vocabulary.apkg\" \"SPANISH_VOCABULARY/\"" );
-        writeln( "    decker \"spanish_vocabulary.csv\" \"SPANISH_VOCABULARY/\" --trim --csv" );
 
         Abort( "Invalid arguments : " ~ argument_array.to!string() );
     }
