@@ -1448,6 +1448,13 @@ void main(
         writeln( "    --trim" );
         writeln( "    --dump" );
         writeln( "    --verbose" );
+        writeln( "Examples :" );
+        writeln( "    --input_folder INPUT_FOLDER/" );
+        writeln( "    decker --output_folder \"SPANISH_VOCABULARY/\" --dump --verbose \"spanish_vocabulary.apkg\"" );
+        writeln( "    decker --input_format \"<img src=\\\"{{front_image}}\\\">§{{front_word}}<br/><i>{{back_word}}</i>\" --output_folder \"SPANISH_VOCABULARY/\" --trim --dump --verbose \"spanish_vocabulary.apkg\"" );
+        writeln( "    decker --input_folder \"<img src=\\\"{{front_image}}\\\">§{{front_word}}<br/><i>{{back_word}}</i>\" --output_folder \"SPANISH_VOCABULARY/\" --trim \"spanish_vocabulary.apkg\" \"spanish_vocabulary.lxf\"" );
+        writeln( "    decker --input_format \"<img src=\\\"{{front_image}}\\\">§{{front_word}}<br/><i>{{back_word}}</i>\" --output_format \"{{front_word}}|{{back_word}}|{{front_image}}\" --trim \"spanish_vocabulary.apkg\" \"spanish_vocabulary.csv\"" );
+        writeln( "    decker --input_folder \"SPANISH_VOCABULARY/\" --input_format \"{{front_word}}|{{back_word}}|{{front_image}}\" --trim \"spanish_vocabulary.csv\" \"spanish_vocabulary.lxf\"" );
 
         Abort( "Invalid arguments : " ~ argument_array.to!string() );
     }
