@@ -4,7 +4,7 @@ import core.stdc.stdlib : exit;
 import etc.c.sqlite3;
 import std.conv;
 import std.digest.crc;
-import std.file : read, readText, rename, write;
+import std.file : exists, read, readText, rename, write;
 import std.json;
 import std.stdio : writeln;
 import std.string : endsWith, indexOf, replace, split, startsWith, strip, toStringz;
@@ -653,6 +653,8 @@ class CARD
 
     PARAMETER[]
         ParameterArray;
+    long
+        OutputFormatIndex;
 
     // -- CONSTRUCTORS
 
@@ -715,7 +717,12 @@ class CARD
         string
             csv_line;
 
-        csv_line = OutputFormat;
+        if ( OutputFormatIndex >= OutputFormatArray.length )
+        {
+            Abort( "Missing output format : " ~ InputFormatArray[ OutputFormatIndex ] );
+        }
+
+        csv_line = OutputFormatArray[ OutputFormatIndex ];
 
         foreach ( parameter; ParameterArray )
         {
@@ -723,6 +730,29 @@ class CARD
         }
 
         return csv_line;
+    }
+
+    // ~~
+
+    ubyte[] GetImageByteArray(
+        )
+    {
+        string
+            image_file_path;
+
+        image_file_path = MediaFolderPath ~ GetValue( "{{front_image}}" );
+        writeln( "Reading file : " ~ image_file_path );
+
+        if ( image_file_path.exists() )
+        {
+            return cast( ubyte[] )image_file_path.read();
+        }
+        else
+        {
+            PrintError( "Invalid image file path : " ~ image_file_path );
+
+            return null;
+        }
     }
 
     // -- OPERATIONS
@@ -746,49 +776,67 @@ class CARD
 
         DumpLine( card_text.GetQuotedText(), true );
 
-        remaining_card_text = card_text;
-        part_array = InputFormat.replace( "{{", "\x1F" ).replace( "}}", "\x1F" ).split( "\x1F" );
-
-        while ( part_array.length >= 3
-                && remaining_card_text.startsWith( part_array[ 0 ] ) )
+        if ( InputFormatArray.length > 0 )
         {
-            parameter_prefix = part_array[ 0 ];
-            parameter_name = "{{" ~ part_array[ 1 ] ~ "}}";
-            parameter_suffix = part_array[ 2 ];
-
-            remaining_card_text = remaining_card_text[ parameter_prefix.length .. $ ];
-
-            if ( parameter_suffix.length == 0 )
+            foreach ( input_format_index, input_format; InputFormatArray )
             {
-                parameter_value = remaining_card_text;
-                remaining_card_text = "";
-            }
-            else
-            {
-                parameter_suffix_character_index = remaining_card_text.indexOf( parameter_suffix );
+                OutputFormatIndex = input_format_index;
+                ParameterArray = null;
 
-                if ( parameter_suffix_character_index >= 0 )
+                remaining_card_text = card_text;
+                part_array = input_format.replace( "{{", "\x1F" ).replace( "}}", "\x1F" ).split( "\x1F" );
+
+                while ( part_array.length >= 3
+                        && remaining_card_text.startsWith( part_array[ 0 ] ) )
                 {
-                    parameter_value = remaining_card_text[ 0 .. parameter_suffix_character_index ];
-                    remaining_card_text = remaining_card_text[ parameter_suffix_character_index .. $ ];
+                    parameter_prefix = part_array[ 0 ];
+                    parameter_name = "{{" ~ part_array[ 1 ] ~ "}}";
+                    parameter_suffix = part_array[ 2 ];
+
+                    remaining_card_text = remaining_card_text[ parameter_prefix.length .. $ ];
+
+                    if ( parameter_suffix.length == 0 )
+                    {
+                        parameter_value = remaining_card_text;
+                        remaining_card_text = "";
+                    }
+                    else
+                    {
+                        parameter_suffix_character_index = remaining_card_text.indexOf( parameter_suffix );
+
+                        if ( parameter_suffix_character_index >= 0 )
+                        {
+                            parameter_value = remaining_card_text[ 0 .. parameter_suffix_character_index ];
+                            remaining_card_text = remaining_card_text[ parameter_suffix_character_index .. $ ];
+                        }
+                        else
+                        {
+                            Abort( "Invalid card text : " ~ card_text );
+                        }
+                    }
+
+                    if ( TrimOptionIsEnabled )
+                    {
+                        parameter_value = parameter_value.strip();
+                    }
+
+                    DumpLine( "    " ~ parameter_name ~ " : " ~ parameter_value.GetQuotedText(), true );
+
+                    parameter = new PARAMETER( parameter_name, parameter_value );
+                    ParameterArray ~= parameter;
+
+                    part_array = part_array[ 2 .. $ ];
                 }
-                else
+
+                if ( remaining_card_text.length == 0
+                     || ( part_array.length == 1
+                          && remaining_card_text == part_array[ 0 ] ) )
                 {
-                    Abort( "Invalid card text : " ~ card_text );
+                    return;
                 }
             }
 
-            if ( TrimOptionIsEnabled )
-            {
-                parameter_value = parameter_value.strip();
-            }
-
-            DumpLine( "    " ~ parameter_name ~ " : " ~ parameter_value.GetQuotedText(), true );
-
-            parameter = new PARAMETER( parameter_name, parameter_value );
-            ParameterArray ~= parameter;
-
-            part_array = part_array[ 2 .. $ ];
+            Abort( "Invalid card text : " ~ card_text );
         }
     }
 }
@@ -830,15 +878,6 @@ class COLLECTION
 
     // ~~
 
-    ubyte[] GetImageByteArray(
-        CARD card
-        )
-    {
-        return cast( ubyte[] )"JFIF";
-    }
-
-    // ~~
-
     ubyte[] GetMediaByteArray(
         CARD card
         )
@@ -852,9 +891,9 @@ class COLLECTION
             image_type;
 
         image_count = 1;
-        image_size = 0;
         image_type = 0;
-        image_byte_array = GetImageByteArray( card );
+        image_byte_array = card.GetImageByteArray();
+        image_size = cast( uint )image_byte_array.length;
 
         media_byte_array ~= ( cast( ubyte * )&image_count )[ 0 .. 4 ];
         media_byte_array ~= ( cast( ubyte * )&image_size )[ 0 .. 4 ];
@@ -990,7 +1029,7 @@ class COLLECTION
 
         if ( DumpOptionIsEnabled )
         {
-            dump_file_path = OutputFolderPath ~ "dump_lexilize.txt";
+            dump_file_path = MediaFolderPath ~ "dump_lexilize.txt";
             writeln( "Writing file : " ~ dump_file_path );
 
             dump_file_path.write( message.GetText() );
@@ -1030,7 +1069,7 @@ class COLLECTION
 
         if ( DumpOptionIsEnabled )
         {
-            dump_file_path = OutputFolderPath ~ "dump_csv.txt";
+            dump_file_path = MediaFolderPath ~ "dump_csv.txt";
             writeln( "Writing file : " ~ dump_file_path );
 
             dump_file_path.write( DumpText );
@@ -1053,7 +1092,7 @@ class COLLECTION
 
         foreach ( file_name, archive_member; zip_archive.directory )
         {
-            extracted_file_path = OutputFolderPath ~ file_name;
+            extracted_file_path = MediaFolderPath ~ file_name;
             writeln( "Writing file : " ~ extracted_file_path  );
 
             assert( archive_member.expandedData.length == 0 );
@@ -1079,7 +1118,7 @@ class COLLECTION
         JSONValue
             json_value;
 
-        media_file_path = OutputFolderPath ~ "media";
+        media_file_path = MediaFolderPath ~ "media";
 
         writeln( "Reading file : " ~ media_file_path );
 
@@ -1088,8 +1127,8 @@ class COLLECTION
 
         foreach ( string key, value; json_value )
         {
-            front_file_path = OutputFolderPath ~ key;
-            back_file_path = OutputFolderPath ~ value.str;
+            front_file_path = MediaFolderPath ~ key;
+            back_file_path = MediaFolderPath ~ value.str;
             writeln( "Renaming file : " ~ front_file_path ~ " => " ~ back_file_path );
 
             front_file_path.rename( back_file_path );
@@ -1115,7 +1154,7 @@ class COLLECTION
         CARD
             card;
 
-        database_file_path = OutputFolderPath ~ "collection.anki2";
+        database_file_path = MediaFolderPath ~ "collection.anki2";
         writeln( "Reading file : " ~ database_file_path );
 
         result = sqlite3_open( toStringz( database_file_path ), &database );
@@ -1148,7 +1187,7 @@ class COLLECTION
 
         if ( DumpOptionIsEnabled )
         {
-            dump_file_path = OutputFolderPath ~ "dump_anki_database.txt";
+            dump_file_path = MediaFolderPath ~ "dump_anki_database.txt";
             writeln( "Writing file : " ~ dump_file_path );
 
             dump_file_path.write( DumpText );
@@ -1166,7 +1205,7 @@ class COLLECTION
 
         if ( DumpOptionIsEnabled )
         {
-            dump_file_path = OutputFolderPath ~ "dump_anki.txt";
+            dump_file_path = MediaFolderPath ~ "dump_anki.txt";
             writeln( "Writing file : " ~ dump_file_path );
 
             dump_file_path.write( DumpText );
@@ -1193,11 +1232,11 @@ bool
 string
     DumpText,
     InputFilePath,
-    InputFolderPath,
-    InputFormat,
-    OutputFilePath,
-    OutputFormat,
-    OutputFolderPath;
+    MediaFolderPath,
+    OutputFilePath;
+string[]
+    InputFormatArray,
+    OutputFormatArray;
 COLLECTION
     Collection;
 TABLE
@@ -1358,15 +1397,14 @@ void main(
 
     argument_array = argument_array[ 1 .. $ ];
 
-    InputFilePath = "";
-    InputFolderPath = "";
-    InputFormat = "";
-    OutputFilePath = "";
-    OutputFolderPath = "";
-    OutputFormat = "";
+    MediaFolderPath = "";
+    InputFormatArray = null;
+    OutputFormatArray = null;
     TrimOptionIsEnabled = false;
     DumpOptionIsEnabled = false;
     VerboseOptionIsEnabled = false;
+    InputFilePath = "";
+    OutputFilePath = "";
 
     while ( argument_array.length >= 1
             && argument_array[ 0 ].startsWith( "--" ) )
@@ -1375,31 +1413,24 @@ void main(
 
         argument_array = argument_array[ 1 .. $ ];
 
-        if ( option == "--input_folder"
+        if ( option == "--media_folder"
              && argument_array.length >= 1 )
         {
-            InputFolderPath = argument_array[ 0 ];
+            MediaFolderPath = argument_array[ 0 ];
 
             argument_array = argument_array[ 1 .. $ ];
         }
         else if ( option == "--input_format"
              && argument_array.length >= 1 )
         {
-            InputFormat = argument_array[ 0 ];
-
-            argument_array = argument_array[ 1 .. $ ];
-        }
-        else if ( option == "--output_folder"
-                  && argument_array.length >= 1 )
-        {
-            OutputFolderPath = argument_array[ 0 ];
+            InputFormatArray ~= argument_array[ 0 ];
 
             argument_array = argument_array[ 1 .. $ ];
         }
         else if ( option == "--output_format"
                   && argument_array.length >= 1 )
         {
-            OutputFormat = argument_array[ 0 ];
+            OutputFormatArray ~= argument_array[ 0 ];
 
             argument_array = argument_array[ 1 .. $ ];
         }
@@ -1441,20 +1472,18 @@ void main(
     {
         writeln( "Usage : decker [options] input_file_path output_file_path" );
         writeln( "Options :" );
-        writeln( "    --input_folder INPUT_FOLDER/" );
         writeln( "    --input_format \"format\"" );
-        writeln( "    --output_folder OUTPUT_FOLDER/" );
         writeln( "    --output_format \"format\"" );
+        writeln( "    --media_folder MEDIA_FOLDER/" );
         writeln( "    --trim" );
         writeln( "    --dump" );
         writeln( "    --verbose" );
         writeln( "Examples :" );
-        writeln( "    --input_folder INPUT_FOLDER/" );
-        writeln( "    decker --output_folder \"SPANISH_VOCABULARY/\" --dump --verbose \"spanish_vocabulary.apkg\"" );
-        writeln( "    decker --input_format \"<img src=\\\"{{front_image}}\\\">§{{front_word}}<br/><i>{{back_word}}</i>\" --output_folder \"SPANISH_VOCABULARY/\" --trim --dump --verbose \"spanish_vocabulary.apkg\"" );
-        writeln( "    decker --input_folder \"<img src=\\\"{{front_image}}\\\">§{{front_word}}<br/><i>{{back_word}}</i>\" --output_folder \"SPANISH_VOCABULARY/\" --trim \"spanish_vocabulary.apkg\" \"spanish_vocabulary.lxf\"" );
+        writeln( "    decker --media_folder \"SPANISH_VOCABULARY/\" --dump --verbose \"spanish_vocabulary.apkg\"" );
+        writeln( "    decker --input_format \"<img src=\\\"{{front_image}}\\\">§{{front_word}}<br/><i>{{back_word}}</i>\" --media_folder \"SPANISH_VOCABULARY/\" --trim --dump --verbose \"spanish_vocabulary.apkg\"" );
+        writeln( "    decker --media_folder \"<img src=\\\"{{front_image}}\\\">§{{front_word}}<br/><i>{{back_word}}</i>\" --media_folder \"SPANISH_VOCABULARY/\" --trim \"spanish_vocabulary.apkg\" \"spanish_vocabulary.lxf\"" );
         writeln( "    decker --input_format \"<img src=\\\"{{front_image}}\\\">§{{front_word}}<br/><i>{{back_word}}</i>\" --output_format \"{{front_word}}|{{back_word}}|{{front_image}}\" --trim \"spanish_vocabulary.apkg\" \"spanish_vocabulary.csv\"" );
-        writeln( "    decker --input_folder \"SPANISH_VOCABULARY/\" --input_format \"{{front_word}}|{{back_word}}|{{front_image}}\" --trim \"spanish_vocabulary.csv\" \"spanish_vocabulary.lxf\"" );
+        writeln( "    decker --media_folder \"SPANISH_VOCABULARY/\" --input_format \"{{front_word}}|{{back_word}}|{{front_image}}\" --trim \"spanish_vocabulary.csv\" \"spanish_vocabulary.lxf\"" );
 
         Abort( "Invalid arguments : " ~ argument_array.to!string() );
     }

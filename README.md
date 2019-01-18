@@ -38,9 +38,8 @@ decker [options] input_file_path output_file_path
 ## Options
 
 ```
---input_folder INPUT_FOLDER/ : read the deck files from this folder
+--media_folder MEDIA_FOLDER/ : read or write the media files using this folder
 --input_format "format" : parses the card parameters with this format
---output_folder OUTPUT_FOLDER/ : write the deck files into this folder
 --output_format "format" : exports the card parameters with this format
 --trim : trim the card parameters
 --dump : dump the processing data
@@ -70,19 +69,19 @@ The following parameters can be exported into the LSF file :
 ### Examples
 
 ```bash
-decker --output_folder "SPANISH_VOCABULARY/" --dump --verbose "spanish_vocabulary.apkg"
+decker --media_folder "SPANISH_VOCABULARY/" --dump --verbose "spanish_vocabulary.apkg"
 ```
 
 Write the Anki deck files into the output folder.
 
 ```bash
-decker --input_format "<img src=\"{{front_image}}\">§{{front_word}}<br/><i>{{back_word}}</i>" --output_folder "SPANISH_VOCABULARY/" --trim --dump --verbose "spanish_vocabulary.apkg"
+decker --input_format "<img src=\"{{front_image}}\">§{{front_word}}<br/><i>{{back_word}}</i>" --media_folder "SPANISH_VOCABULARY/" --trim --dump --verbose "spanish_vocabulary.apkg"
 ```
 
 Write the Anki deck files into the output folder, and parses the Anki card parameters.
 
 ```bash
-decker --input_folder "<img src=\"{{front_image}}\">§{{front_word}}<br/><i>{{back_word}}</i>" --output_folder "SPANISH_VOCABULARY/" --trim "spanish_vocabulary.apkg" "spanish_vocabulary.lxf"
+decker --media_folder "<img src=\"{{front_image}}\">§{{front_word}}<br/><i>{{back_word}}</i>" --media_folder "SPANISH_VOCABULARY/" --trim "spanish_vocabulary.apkg" "spanish_vocabulary.lxf"
 ```
 
 Write the Anki deck files into the output folder, parses the Anki card parameters and generates a Lexilize deck.
@@ -94,7 +93,7 @@ decker --input_format "<img src=\"{{front_image}}\">§{{front_word}}<br/><i>{{ba
 Write the Anki deck files into the output folder, parses the Anki card parameters and generates a CSV deck.
 
 ```bash
-decker --input_folder "SPANISH_VOCABULARY/" --input_format "{{front_word}}|{{back_word}}|{{front_image}}" --trim "spanish_vocabulary.csv" "spanish_vocabulary.lxf"
+decker --media_folder "SPANISH_VOCABULARY/" --input_format "{{front_word}}|{{back_word}}|{{front_image}}" --trim "spanish_vocabulary.csv" "spanish_vocabulary.lxf"
 ```
 
 Parses the CSV card parameters and generates a CSV deck.
