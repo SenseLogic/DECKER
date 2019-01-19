@@ -702,12 +702,26 @@ class PARAMETER_TABLE
 
 // ~~
 
+class IMAGE
+{
+    string
+        ParameterName,
+        FileName,
+        FilePath;
+    ubyte[]
+        ByteArray;
+}
+
+// ~~
+
 class CARD : PARAMETER_TABLE
 {
     // -- ATTRIBUTES
 
     long
         OutputFormatIndex;
+    IMAGE[]
+        ImageArray;
 
     // -- CONSTRUCTORS
 
@@ -739,29 +753,6 @@ class CARD : PARAMETER_TABLE
         }
 
         return csv_line;
-    }
-
-    // ~~
-
-    ubyte[] GetImageByteArray(
-        )
-    {
-        string
-            image_file_path;
-
-        image_file_path = MediaFolderPath ~ GetValue( "front_image" );
-        writeln( "Reading file : " ~ image_file_path );
-
-        if ( image_file_path.exists() )
-        {
-            return cast( ubyte[] )image_file_path.read();
-        }
-        else
-        {
-            PrintError( "Invalid image file path : " ~ image_file_path );
-
-            return null;
-        }
     }
 
     // -- OPERATIONS
@@ -848,6 +839,53 @@ class CARD : PARAMETER_TABLE
             Abort( "Invalid card text : " ~ card_text );
         }
     }
+
+    // ~~
+
+    void ReadImage(
+        string parameter_name
+        )
+    {
+        string
+            image_file_name,
+            image_file_path;
+        IMAGE
+            image;
+
+        if ( HasParameter( parameter_name ) )
+        {
+            image_file_name = GetValue( parameter_name );
+            image_file_path = MediaFolderPath ~ image_file_name;
+            writeln( "Reading file : " ~ image_file_path );
+
+            if ( image_file_path.exists() )
+            {
+                image = new IMAGE();
+                image.ParameterName = parameter_name;
+                image.FileName = image_file_name;
+                image.FilePath = image_file_path;
+                image.ByteArray = cast( ubyte[] )image_file_path.read();
+
+                ImageArray ~= image;
+            }
+            else
+            {
+                PrintError( "Invalid image file path : " ~ image_file_path );
+            }
+        }
+    }
+
+    // ~~
+
+    void ReadImages(
+        )
+    {
+        ImageArray = null;
+
+        ReadImage( "image" );
+        ReadImage( "front_image" );
+        ReadImage( "back_image" );
+    }
 }
 
 // ~~
@@ -892,25 +930,36 @@ class COLLECTION : PARAMETER_TABLE
         )
     {
         ubyte[]
-            image_byte_array,
             media_byte_array;
         uint
             image_count,
             image_size,
             image_type;
 
-        image_count = 1;
-        image_type = 0;
-        image_byte_array = card.GetImageByteArray();
-        image_size = cast( uint )image_byte_array.length;
-
+        image_count = card.ImageArray.length.to!uint();
         media_byte_array ~= ( cast( ubyte * )&image_count )[ 0 .. 4 ];
-        media_byte_array ~= ( cast( ubyte * )&image_size )[ 0 .. 4 ];
-        media_byte_array ~= ( cast( ubyte * )&image_type )[ 0 .. 4 ];
-        media_byte_array ~= image_byte_array;
+
+        foreach ( image; card.ImageArray )
+        {
+            image_size = image.ByteArray.length.to!uint();
+            media_byte_array ~= ( cast( ubyte * )&image_size )[ 0 .. 4 ];
+        }
+
+        image_type = 0;
+
+        foreach ( image; card.ImageArray )
+        {
+            media_byte_array ~= ( cast( ubyte * )&image_type )[ 0 .. 4 ];
+        }
+
+        foreach ( image; card.ImageArray )
+        {
+            media_byte_array ~= image.ByteArray;
+        }
 
         return media_byte_array;
     }
+
     // ~~
 
     MESSAGE GetWordMessage(
@@ -971,7 +1020,9 @@ class COLLECTION : PARAMETER_TABLE
         record_message.AddMessage( GetWordMessage( "words_1", 4, card, "front" ) );
         record_message.AddMessage( GetWordMessage( "words_2", 5, card, "back" ) );
 
-        if ( card.HasParameter( "front_image" ) )
+        card.ReadImages();
+
+        if ( card.ImageArray.length > 0 )
         {
             record_message.AddMessage( GetMediaMessage( "media", 8, card ) );
         }

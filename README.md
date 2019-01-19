@@ -47,41 +47,32 @@ decker [options] input_file_path output_file_path
 --verbose : show the processing messages
 ```
 
-## Parameters
+## Standard parameters
 
-The following deck parameters are recognized :
+The LXF export uses the following parameters when available :
 
-```
-front_title
-front_language
+*   Deck :
 
-back_image
-back_word
-back_transcription
-back_sample
-back_comment
-back_gender
-```
+    *   front_title
+    *   back_title
+    *   front_language
+    *   back_language
 
-The following card parameters are recognized :
+*   Cards :
 
-```
-image
-
-front_image
-front_word
-front_transcription
-front_sample
-front_comment
-front_gender
-
-back_image
-back_word
-back_transcription
-back_sample
-back_comment
-back_gender
-```
+    *   image
+    *   front_image
+    *   back_image
+    *   front_word
+    *   back_word
+    *   front_transcription
+    *   back_transcription
+    *   front_sample
+    *   back_sample
+    *   front_comment
+    *   back_comment
+    *   front_gender
+    *   back_gender
 
 ### Examples
 
