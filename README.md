@@ -38,8 +38,10 @@ decker [options] input_file_path output_file_path
 ## Options
 
 ```
---parameter "name" "value" : define a deck parameter
---media_folder MEDIA_FOLDER/ : read or write the media files using this folder
+--front_title : front title
+--back_title : back title
+--front_language : front language
+--back_language : back language
 --input_format "format" : parses the card parameters with this format
 --output_format "format" : exports the card parameters with this format
 --trim : trim the card parameters
@@ -47,32 +49,161 @@ decker [options] input_file_path output_file_path
 --verbose : show the processing messages
 ```
 
-## Standard parameters
+## LXF export
 
-The LXF export uses the following parameters when available :
+Deck options :
 
-*   Deck :
+*   --front_title
+*   --back_title
+*   --front_language
+*   --back_language
 
-    *   front_title
-    *   back_title
-    *   front_language
-    *   back_language
+Card parameters :
 
-*   Cards :
+*   {{image}}
+*   {{front_image}}
+*   {{back_image}}
+*   {{front_word}}
+*   {{back_word}}
+*   {{front_transcription}}
+*   {{back_transcription}}
+*   {{front_sample}}
+*   {{back_sample}}
+*   {{front_comment}}
+*   {{back_comment}}
+*   {{front_gender}}
+*   {{back_gender}}
 
-    *   image
-    *   front_image
-    *   back_image
-    *   front_word
-    *   back_word
-    *   front_transcription
-    *   back_transcription
-    *   front_sample
-    *   back_sample
-    *   front_comment
-    *   back_comment
-    *   front_gender
-    *   back_gender
+Language names :
+
+*   "english"
+*   "french"
+*   "german"
+*   "italian"
+*   "dutch"
+*   "swedish"
+*   "spanish"
+*   "danish"
+*   "portuguese"
+*   "norwegian"
+*   "hebrew"
+*   "japanese kanji"
+*   "arabic"
+*   "finnish"
+*   "greek"
+*   "icelandic"
+*   "maltese"
+*   "turkish"
+*   "croatian"
+*   "chinese traditional"
+*   "urdu"
+*   "hindi"
+*   "thai"
+*   "korean"
+*   "lithuanian"
+*   "polish"
+*   "hungarian"
+*   "estonian"
+*   "latvian"
+*   "sami"
+*   "faroese"
+*   "farsi"
+*   "russian"
+*   "chinese simplified"
+*   "flemish"
+*   "irish gaelic"
+*   "albanian"
+*   "romanian"
+*   "czech"
+*   "slovak"
+*   "slovenian"
+*   "yiddish"
+*   "serbian"
+*   "macedonian"
+*   "bulgarian"
+*   "ukrainian"
+*   "belarusian"
+*   "uzbek"
+*   "kazakh"
+*   "azerbaijani cyrillic"
+*   "azerbaijani arabic"
+*   "armenian"
+*   "georgian"
+*   "moldavian"
+*   "kyrgyz"
+*   "tajik"
+*   "turkmen"
+*   "mongolian"
+*   "mongolian cyrillic"
+*   "pashto"
+*   "kurdish"
+*   "kashmiri"
+*   "sindhi"
+*   "tibetan"
+*   "nepali"
+*   "sanskrit"
+*   "marathi"
+*   "bengali"
+*   "assamese"
+*   "gujarati"
+*   "punjabi"
+*   "oriya"
+*   "malayalam"
+*   "kannada"
+*   "tamil"
+*   "telugu"
+*   "sinhalese"
+*   "burmese"
+*   "khmer"
+*   "lao"
+*   "vietnamese"
+*   "indonesian"
+*   "tagalog"
+*   "malay roman"
+*   "malay arabic"
+*   "amharic"
+*   "tigrinya"
+*   "galla"
+*   "somali"
+*   "swahili"
+*   "kinyarwanda"
+*   "rundi"
+*   "nyanja chewa"
+*   "malagasy"
+*   "esperanto"
+*   "welsh"
+*   "basque"
+*   "catalan"
+*   "latin"
+*   "quenchua"
+*   "guarani"
+*   "aymara"
+*   "tatar"
+*   "uighur"
+*   "dzongkha"
+*   "javanese roman"
+*   "sundanese roman"
+*   "galician"
+*   "afrikaans"
+*   "breton"
+*   "inuktitut"
+*   "scottish gaelic"
+*   "manx gaelic"
+*   "irish gaelic dot above"
+*   "tongan"
+*   "greek polytonic"
+*   "greenlandic"
+*   "azerbaijani roman"
+*   "japanese kana"
+*   "bosnian"
+*   "chess"
+*   "history"
+*   "dates"
+*   "mathematics"
+*   "music"
+*   "physics"
+*   "geography"
+*   "medicine"
 
 ### Examples
 

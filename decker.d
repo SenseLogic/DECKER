@@ -7,7 +7,7 @@ import std.digest.crc;
 import std.file : exists, read, readText, rename, write;
 import std.json;
 import std.stdio : writeln;
-import std.string : endsWith, indexOf, replace, split, startsWith, strip, toStringz;
+import std.string : endsWith, indexOf, replace, split, startsWith, strip, toLower, toStringz;
 import std.zip;
 
 // -- TYPES
@@ -647,12 +647,37 @@ class PARAMETER
 
 // ~~
 
-class PARAMETER_TABLE
+class IMAGE
+{
+    string
+        ParameterName,
+        FileName,
+        FilePath;
+    ubyte[]
+        ByteArray;
+}
+
+// ~~
+
+class CARD
 {
     // -- ATTRIBUTES
 
     PARAMETER[]
         ParameterArray;
+    long
+        OutputFormatIndex;
+    IMAGE[]
+        ImageArray;
+
+    // -- CONSTRUCTORS
+
+    this(
+        string card_text
+        )
+    {
+        ParseText( card_text );
+    }
 
     // -- INQUIRIES
 
@@ -698,41 +723,7 @@ class PARAMETER_TABLE
         return GetParameter( parameter_name ) !is null;
     }
 
-}
-
-// ~~
-
-class IMAGE
-{
-    string
-        ParameterName,
-        FileName,
-        FilePath;
-    ubyte[]
-        ByteArray;
-}
-
-// ~~
-
-class CARD : PARAMETER_TABLE
-{
-    // -- ATTRIBUTES
-
-    long
-        OutputFormatIndex;
-    IMAGE[]
-        ImageArray;
-
-    // -- CONSTRUCTORS
-
-    this(
-        string card_text
-        )
-    {
-        ParseText( card_text );
-    }
-
-    // -- INQUIRIES
+    // ~~
 
     string GetCsvLine(
         )
@@ -890,7 +881,7 @@ class CARD : PARAMETER_TABLE
 
 // ~~
 
-class COLLECTION : PARAMETER_TABLE
+class COLLECTION
 {
     // -- ATTRIBUTES
 
@@ -921,6 +912,536 @@ class COLLECTION : PARAMETER_TABLE
         writeln( "Writing file : " ~ OutputFilePath );
 
         OutputFilePath.write( csv_file_text );
+    }
+
+    // ~~
+
+    int GetLanguageId(
+        string language_name
+        )
+    {
+        if ( language_name == "" )
+        {
+            return -1;
+        }
+        else if ( language_name == "english" )
+        {
+            return 0;
+        }
+        else if ( language_name == "french" )
+        {
+            return 1;
+        }
+        else if ( language_name == "german" )
+        {
+            return 2;
+        }
+        else if ( language_name == "italian" )
+        {
+            return 3;
+        }
+        else if ( language_name == "dutch" )
+        {
+            return 4;
+        }
+        else if ( language_name == "swedish" )
+        {
+            return 5;
+        }
+        else if ( language_name == "spanish" )
+        {
+            return 6;
+        }
+        else if ( language_name == "danish" )
+        {
+            return 7;
+        }
+        else if ( language_name == "portuguese" )
+        {
+            return 8;
+        }
+        else if ( language_name == "norwegian" )
+        {
+            return 9;
+        }
+        else if ( language_name == "hebrew" )
+        {
+            return 10;
+        }
+        else if ( language_name == "japanese kanji" )
+        {
+            return 11;
+        }
+        else if ( language_name == "arabic" )
+        {
+            return 12;
+        }
+        else if ( language_name == "finnish" )
+        {
+            return 13;
+        }
+        else if ( language_name == "greek" )
+        {
+            return 14;
+        }
+        else if ( language_name == "icelandic" )
+        {
+            return 15;
+        }
+        else if ( language_name == "maltese" )
+        {
+            return 16;
+        }
+        else if ( language_name == "turkish" )
+        {
+            return 17;
+        }
+        else if ( language_name == "croatian" )
+        {
+            return 18;
+        }
+        else if ( language_name == "chinese traditional" )
+        {
+            return 19;
+        }
+        else if ( language_name == "urdu" )
+        {
+            return 20;
+        }
+        else if ( language_name == "hindi" )
+        {
+            return 21;
+        }
+        else if ( language_name == "thai" )
+        {
+            return 22;
+        }
+        else if ( language_name == "korean" )
+        {
+            return 23;
+        }
+        else if ( language_name == "lithuanian" )
+        {
+            return 24;
+        }
+        else if ( language_name == "polish" )
+        {
+            return 25;
+        }
+        else if ( language_name == "hungarian" )
+        {
+            return 26;
+        }
+        else if ( language_name == "estonian" )
+        {
+            return 27;
+        }
+        else if ( language_name == "latvian" )
+        {
+            return 28;
+        }
+        else if ( language_name == "sami" )
+        {
+            return 29;
+        }
+        else if ( language_name == "faroese" )
+        {
+            return 30;
+        }
+        else if ( language_name == "farsi" )
+        {
+            return 31;
+        }
+        else if ( language_name == "russian" )
+        {
+            return 32;
+        }
+        else if ( language_name == "chinese simplified" )
+        {
+            return 33;
+        }
+        else if ( language_name == "flemish" )
+        {
+            return 34;
+        }
+        else if ( language_name == "irish gaelic" )
+        {
+            return 35;
+        }
+        else if ( language_name == "albanian" )
+        {
+            return 36;
+        }
+        else if ( language_name == "romanian" )
+        {
+            return 37;
+        }
+        else if ( language_name == "czech" )
+        {
+            return 38;
+        }
+        else if ( language_name == "slovak" )
+        {
+            return 39;
+        }
+        else if ( language_name == "slovenian" )
+        {
+            return 40;
+        }
+        else if ( language_name == "yiddish" )
+        {
+            return 41;
+        }
+        else if ( language_name == "serbian" )
+        {
+            return 42;
+        }
+        else if ( language_name == "macedonian" )
+        {
+            return 43;
+        }
+        else if ( language_name == "bulgarian" )
+        {
+            return 44;
+        }
+        else if ( language_name == "ukrainian" )
+        {
+            return 45;
+        }
+        else if ( language_name == "belarusian" )
+        {
+            return 46;
+        }
+        else if ( language_name == "uzbek" )
+        {
+            return 47;
+        }
+        else if ( language_name == "kazakh" )
+        {
+            return 48;
+        }
+        else if ( language_name == "azerbaijani cyrillic" )
+        {
+            return 49;
+        }
+        else if ( language_name == "azerbaijani arabic" )
+        {
+            return 50;
+        }
+        else if ( language_name == "armenian" )
+        {
+            return 51;
+        }
+        else if ( language_name == "georgian" )
+        {
+            return 52;
+        }
+        else if ( language_name == "moldavian" )
+        {
+            return 53;
+        }
+        else if ( language_name == "kyrgyz" )
+        {
+            return 54;
+        }
+        else if ( language_name == "tajik" )
+        {
+            return 55;
+        }
+        else if ( language_name == "turkmen" )
+        {
+            return 56;
+        }
+        else if ( language_name == "mongolian" )
+        {
+            return 57;
+        }
+        else if ( language_name == "mongolian cyrillic" )
+        {
+            return 58;
+        }
+        else if ( language_name == "pashto" )
+        {
+            return 59;
+        }
+        else if ( language_name == "kurdish" )
+        {
+            return 60;
+        }
+        else if ( language_name == "kashmiri" )
+        {
+            return 61;
+        }
+        else if ( language_name == "sindhi" )
+        {
+            return 62;
+        }
+        else if ( language_name == "tibetan" )
+        {
+            return 63;
+        }
+        else if ( language_name == "nepali" )
+        {
+            return 64;
+        }
+        else if ( language_name == "sanskrit" )
+        {
+            return 65;
+        }
+        else if ( language_name == "marathi" )
+        {
+            return 66;
+        }
+        else if ( language_name == "bengali" )
+        {
+            return 67;
+        }
+        else if ( language_name == "assamese" )
+        {
+            return 68;
+        }
+        else if ( language_name == "gujarati" )
+        {
+            return 69;
+        }
+        else if ( language_name == "punjabi" )
+        {
+            return 70;
+        }
+        else if ( language_name == "oriya" )
+        {
+            return 71;
+        }
+        else if ( language_name == "malayalam" )
+        {
+            return 72;
+        }
+        else if ( language_name == "kannada" )
+        {
+            return 73;
+        }
+        else if ( language_name == "tamil" )
+        {
+            return 74;
+        }
+        else if ( language_name == "telugu" )
+        {
+            return 75;
+        }
+        else if ( language_name == "sinhalese" )
+        {
+            return 76;
+        }
+        else if ( language_name == "burmese" )
+        {
+            return 77;
+        }
+        else if ( language_name == "khmer" )
+        {
+            return 78;
+        }
+        else if ( language_name == "lao" )
+        {
+            return 79;
+        }
+        else if ( language_name == "vietnamese" )
+        {
+            return 80;
+        }
+        else if ( language_name == "indonesian" )
+        {
+            return 81;
+        }
+        else if ( language_name == "tagalog" )
+        {
+            return 82;
+        }
+        else if ( language_name == "malay roman" )
+        {
+            return 83;
+        }
+        else if ( language_name == "malay arabic" )
+        {
+            return 84;
+        }
+        else if ( language_name == "amharic" )
+        {
+            return 85;
+        }
+        else if ( language_name == "tigrinya" )
+        {
+            return 86;
+        }
+        else if ( language_name == "galla" )
+        {
+            return 87;
+        }
+        else if ( language_name == "somali" )
+        {
+            return 88;
+        }
+        else if ( language_name == "swahili" )
+        {
+            return 89;
+        }
+        else if ( language_name == "kinyarwanda" )
+        {
+            return 90;
+        }
+        else if ( language_name == "rundi" )
+        {
+            return 91;
+        }
+        else if ( language_name == "nyanja chewa" )
+        {
+            return 92;
+        }
+        else if ( language_name == "malagasy" )
+        {
+            return 93;
+        }
+        else if ( language_name == "esperanto" )
+        {
+            return 94;
+        }
+        else if ( language_name == "welsh" )
+        {
+            return 128;
+        }
+        else if ( language_name == "basque" )
+        {
+            return 129;
+        }
+        else if ( language_name == "catalan" )
+        {
+            return 130;
+        }
+        else if ( language_name == "latin" )
+        {
+            return 131;
+        }
+        else if ( language_name == "quenchua" )
+        {
+            return 132;
+        }
+        else if ( language_name == "guarani" )
+        {
+            return 133;
+        }
+        else if ( language_name == "aymara" )
+        {
+            return 134;
+        }
+        else if ( language_name == "tatar" )
+        {
+            return 135;
+        }
+        else if ( language_name == "uighur" )
+        {
+            return 136;
+        }
+        else if ( language_name == "dzongkha" )
+        {
+            return 137;
+        }
+        else if ( language_name == "javanese roman" )
+        {
+            return 138;
+        }
+        else if ( language_name == "sundanese roman" )
+        {
+            return 139;
+        }
+        else if ( language_name == "galician" )
+        {
+            return 140;
+        }
+        else if ( language_name == "afrikaans" )
+        {
+            return 141;
+        }
+        else if ( language_name == "breton" )
+        {
+            return 142;
+        }
+        else if ( language_name == "inuktitut" )
+        {
+            return 143;
+        }
+        else if ( language_name == "scottish gaelic" )
+        {
+            return 144;
+        }
+        else if ( language_name == "manx gaelic" )
+        {
+            return 145;
+        }
+        else if ( language_name == "irish gaelic dot above" )
+        {
+            return 146;
+        }
+        else if ( language_name == "tongan" )
+        {
+            return 147;
+        }
+        else if ( language_name == "greek polytonic" )
+        {
+            return 148;
+        }
+        else if ( language_name == "greenlandic" )
+        {
+            return 149;
+        }
+        else if ( language_name == "azerbaijani roman" )
+        {
+            return 150;
+        }
+        else if ( language_name == "japanese kana" )
+        {
+            return 151;
+        }
+        else if ( language_name == "bosnian" )
+        {
+            return 152;
+        }
+        else if ( language_name == "chess" )
+        {
+            return 200;
+        }
+        else if ( language_name == "history" )
+        {
+            return 201;
+        }
+        else if ( language_name == "dates" )
+        {
+            return 202;
+        }
+        else if ( language_name == "mathematics" )
+        {
+            return 203;
+        }
+        else if ( language_name == "music" )
+        {
+            return 204;
+        }
+        else if ( language_name == "physics" )
+        {
+            return 205;
+        }
+        else if ( language_name == "geography" )
+        {
+            return 206;
+        }
+        else if ( language_name == "medicine" )
+        {
+            return 207;
+        }
+        else
+        {
+            Abort( "Invalid language name : " ~ language_name );
+
+            return -1;
+        }
     }
 
     // ~~
@@ -1043,10 +1564,10 @@ class COLLECTION : PARAMETER_TABLE
         base_message = new MESSAGE( name, field_index );
         base_message.AddInt32( "id", 1, -1 );
         base_message.AddInt64( "creation_date", 2, 1 );
-        base_message.AddString( "lang_names_1", 3, "" );
-        base_message.AddString( "lang_names_2", 4, "" );
-        base_message.AddInt32( "lang_ids_1", 5, 1 );
-        base_message.AddInt32( "lang_ids_2", 6, 2 );
+        base_message.AddString( "lang_names_1", 3, FrontTitle );
+        base_message.AddString( "lang_names_2", 4, FrontTitle );
+        base_message.AddInt32( "lang_ids_1", 5, GetLanguageId( FrontLanguageName ) );
+        base_message.AddInt32( "lang_ids_2", 6, GetLanguageId( BackLanguageName ) );
         base_message.AddString( "progress", 11, "0.0" );
         base_message.AddString( "quality", 12, "0.0" );
         base_message.AddInt64( "last_update_date", 13, 1 );
@@ -1290,7 +1811,11 @@ bool
     TrimOptionIsEnabled,
     VerboseOptionIsEnabled;
 string
+    BackLanguageName,
+    BackTitle,
     DumpText,
+    FrontLanguageName,
+    FrontTitle,
     InputFilePath,
     MediaFolderPath,
     OutputFilePath;
@@ -1403,6 +1928,8 @@ int AddRow(
 void ProcessCollection(
     )
 {
+    Collection = new COLLECTION();
+
     if ( InputFilePath.endsWith( ".csv" ) )
     {
         Collection.ReadCsvFile();
@@ -1455,8 +1982,10 @@ void main(
 
     argument_array = argument_array[ 1 .. $ ];
 
-    Collection = new COLLECTION();
-
+    FrontTitle = "";
+    BackTitle = "";
+    FrontLanguageName = "";
+    BackLanguageName = "";
     MediaFolderPath = "";
     InputFormatArray = null;
     OutputFormatArray = null;
@@ -1473,12 +2002,33 @@ void main(
 
         argument_array = argument_array[ 1 .. $ ];
 
-        if ( option == "--parameter"
-             && argument_array.length >= 2 )
+        if ( option == "--front_title"
+                  && argument_array.length >= 1 )
         {
-            Collection.ParameterArray ~= new PARAMETER( argument_array[ 0 ], argument_array[ 1 ] );
+            FrontTitle ~= argument_array[ 0 ];
 
-            argument_array = argument_array[ 2 .. $ ];
+            argument_array = argument_array[ 1 .. $ ];
+        }
+        else if ( option == "--back_title"
+                  && argument_array.length >= 1 )
+        {
+            BackTitle ~= argument_array[ 0 ];
+
+            argument_array = argument_array[ 1 .. $ ];
+        }
+        else if ( option == "--front_language"
+                  && argument_array.length >= 1 )
+        {
+            FrontLanguageName ~= argument_array[ 0 ];
+
+            argument_array = argument_array[ 1 .. $ ];
+        }
+        else if ( option == "--back_language"
+                  && argument_array.length >= 1 )
+        {
+            BackLanguageName ~= argument_array[ 0 ];
+
+            argument_array = argument_array[ 1 .. $ ];
         }
         else if ( option == "--media_folder"
                   && argument_array.length >= 1 )
@@ -1539,7 +2089,10 @@ void main(
     {
         writeln( "Usage : decker [options] input_file_path output_file_path" );
         writeln( "Options :" );
-        writeln( "    --parameter name \"value\"" );
+        writeln( "    --front_title \"title\"" );
+        writeln( "    --back_title \"title\"" );
+        writeln( "    --front_language \"language\"" );
+        writeln( "    --back_language \"language\"" );
         writeln( "    --input_format \"format\"" );
         writeln( "    --output_format \"format\"" );
         writeln( "    --media_folder MEDIA_FOLDER/" );
