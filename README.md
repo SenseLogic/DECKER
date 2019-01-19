@@ -38,6 +38,7 @@ decker [options] input_file_path output_file_path
 ## Options
 
 ```
+--parameter "name" "value" : define a deck parameter
 --media_folder MEDIA_FOLDER/ : read or write the media files using this folder
 --input_format "format" : parses the card parameters with this format
 --output_format "format" : exports the card parameters with this format
@@ -48,22 +49,38 @@ decker [options] input_file_path output_file_path
 
 ## Parameters
 
-The following parameters can be exported into the LSF file :
+The following deck parameters are recognized :
 
 ```
-{{front_image}}
-{{front_word}}
-{{front_transcription}}
-{{front_sample}}
-{{front_comment}}
-{{front_gender}}
+front_title
+front_language
 
-{{back_image}}
-{{back_word}}
-{{back_transcription}}
-{{back_sample}}
-{{back_comment}}
-{{back_gender}}
+back_image
+back_word
+back_transcription
+back_sample
+back_comment
+back_gender
+```
+
+The following card parameters are recognized :
+
+```
+image
+
+front_image
+front_word
+front_transcription
+front_sample
+front_comment
+front_gender
+
+back_image
+back_word
+back_transcription
+back_sample
+back_comment
+back_gender
 ```
 
 ### Examples

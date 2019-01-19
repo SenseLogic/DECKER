@@ -647,23 +647,12 @@ class PARAMETER
 
 // ~~
 
-class CARD
+class PARAMETER_TABLE
 {
     // -- ATTRIBUTES
 
     PARAMETER[]
         ParameterArray;
-    long
-        OutputFormatIndex;
-
-    // -- CONSTRUCTORS
-
-    this(
-        string card_text
-        )
-    {
-        ParseText( card_text );
-    }
 
     // -- INQUIRIES
 
@@ -709,7 +698,27 @@ class CARD
         return GetParameter( parameter_name ) !is null;
     }
 
-    // ~~
+}
+
+// ~~
+
+class CARD : PARAMETER_TABLE
+{
+    // -- ATTRIBUTES
+
+    long
+        OutputFormatIndex;
+
+    // -- CONSTRUCTORS
+
+    this(
+        string card_text
+        )
+    {
+        ParseText( card_text );
+    }
+
+    // -- INQUIRIES
 
     string GetCsvLine(
         )
@@ -726,7 +735,7 @@ class CARD
 
         foreach ( parameter; ParameterArray )
         {
-            csv_line = csv_line.replace( parameter.Name, parameter.Value );
+            csv_line = csv_line.replace( "{{" ~ parameter.Name ~ "}}", parameter.Value );
         }
 
         return csv_line;
@@ -740,7 +749,7 @@ class CARD
         string
             image_file_path;
 
-        image_file_path = MediaFolderPath ~ GetValue( "{{front_image}}" );
+        image_file_path = MediaFolderPath ~ GetValue( "front_image" );
         writeln( "Reading file : " ~ image_file_path );
 
         if ( image_file_path.exists() )
@@ -790,7 +799,7 @@ class CARD
                         && remaining_card_text.startsWith( part_array[ 0 ] ) )
                 {
                     parameter_prefix = part_array[ 0 ];
-                    parameter_name = "{{" ~ part_array[ 1 ] ~ "}}";
+                    parameter_name = part_array[ 1 ];
                     parameter_suffix = part_array[ 2 ];
 
                     remaining_card_text = remaining_card_text[ parameter_prefix.length .. $ ];
@@ -843,7 +852,7 @@ class CARD
 
 // ~~
 
-class COLLECTION
+class COLLECTION : PARAMETER_TABLE
 {
     // -- ATTRIBUTES
 
@@ -916,11 +925,11 @@ class COLLECTION
 
         word_message = new MESSAGE( name, field_index );
         word_message.AddInt64( "id", 1, -1 );
-        word_message.AddString( "word", 2, card.GetValue( "{{" ~ prefix ~ "_word}}" ) );
-        word_message.AddString( "transc", 3, card.GetValue( "{{" ~ prefix ~ "_transcription}}" ) );
-        word_message.AddString( "sample", 4, card.GetValue( "{{" ~ prefix ~ "_sample}}" ) );
-        word_message.AddString( "comment", 5, card.GetValue( "{{" ~ prefix ~ "_comment}}" ) );
-        word_message.AddString( "gender", 7, card.GetValue( "{{" ~ prefix ~ "_gender}}" ) );
+        word_message.AddString( "word", 2, card.GetValue( prefix ~ "_word" ) );
+        word_message.AddString( "transc", 3, card.GetValue( prefix ~ "_transcription" ) );
+        word_message.AddString( "sample", 4, card.GetValue( prefix ~ "_sample" ) );
+        word_message.AddString( "comment", 5, card.GetValue( prefix ~ "_comment" ) );
+        word_message.AddString( "gender", 7, card.GetValue( prefix ~ "_gender" ) );
 
         return word_message;
     }
@@ -962,7 +971,7 @@ class COLLECTION
         record_message.AddMessage( GetWordMessage( "words_1", 4, card, "front" ) );
         record_message.AddMessage( GetWordMessage( "words_2", 5, card, "back" ) );
 
-        if ( card.HasParameter( "{{front_image}}" ) )
+        if ( card.HasParameter( "front_image" ) )
         {
             record_message.AddMessage( GetMediaMessage( "media", 8, card ) );
         }
@@ -1343,8 +1352,6 @@ int AddRow(
 void ProcessCollection(
     )
 {
-    Collection = new COLLECTION();
-
     if ( InputFilePath.endsWith( ".csv" ) )
     {
         Collection.ReadCsvFile();
@@ -1397,6 +1404,8 @@ void main(
 
     argument_array = argument_array[ 1 .. $ ];
 
+    Collection = new COLLECTION();
+
     MediaFolderPath = "";
     InputFormatArray = null;
     OutputFormatArray = null;
@@ -1413,15 +1422,22 @@ void main(
 
         argument_array = argument_array[ 1 .. $ ];
 
-        if ( option == "--media_folder"
-             && argument_array.length >= 1 )
+        if ( option == "--parameter"
+             && argument_array.length >= 2 )
+        {
+            Collection.ParameterArray ~= new PARAMETER( argument_array[ 0 ], argument_array[ 1 ] );
+
+            argument_array = argument_array[ 2 .. $ ];
+        }
+        else if ( option == "--media_folder"
+                  && argument_array.length >= 1 )
         {
             MediaFolderPath = argument_array[ 0 ];
 
             argument_array = argument_array[ 1 .. $ ];
         }
         else if ( option == "--input_format"
-             && argument_array.length >= 1 )
+                  && argument_array.length >= 1 )
         {
             InputFormatArray ~= argument_array[ 0 ];
 
@@ -1472,6 +1488,7 @@ void main(
     {
         writeln( "Usage : decker [options] input_file_path output_file_path" );
         writeln( "Options :" );
+        writeln( "    --parameter name \"value\"" );
         writeln( "    --input_format \"format\"" );
         writeln( "    --output_format \"format\"" );
         writeln( "    --media_folder MEDIA_FOLDER/" );

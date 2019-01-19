@@ -2,6 +2,9 @@
 set -x
 cd TEST
 
+#../decker --parameter "front_title" "Animals" --parameter "back_title" "Animales" --parameter "front_language" "English" --parameter "back_language" "Spanish"--media_folder "SPANISH_ANIMALS/" --input_format "{{front_word}}|{{back_word}}|{{front_image}}" --dump --verbose "spanish_animals.csv" "spanish_animals.lxf"
+#read key
+
 ../decker --media_folder "SPANISH_VERBS/" --dump --verbose "spanish_verbs.apkg"
 read key
 
