@@ -52,14 +52,14 @@ decker [options] input_file_path output_file_path
 
 ## LXF export
 
-Supported deck parameters :
+Valid deck parameters :
 
 *   front_title
 *   back_title
 *   front_language
 *   back_language
 
-Supported card parameters :
+Valid card parameters :
 
 *   front_word
 *   back_word
@@ -75,7 +75,19 @@ Supported card parameters :
 *   back_image
 *   image
 
-Supported languages :
+Valid genders :
+
+*   n
+*   neuter
+*   neutral
+*	m
+*	male
+*	masculine
+*	f
+*	female
+*	feminine
+
+Valid languages :
 
 *   english
 *   french

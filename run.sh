@@ -2,7 +2,7 @@
 set -x
 cd TEST
 
-../decker --front_title "Animals" --back_title "Animales" --front_language "english" --back_language "spanish" --input_format "{{front_word}}|{{back_word}}|{{front_transcription}}|{{back_transcription}}|{{front_sample}}|{{back_sample}}|{{front_comment}}|{{back_comment}}|{{front_gender}}|{{back_gender}}|{{front_image}}|{{back_image}}" --media_folder "SPANISH_ANIMALS/" --dump_folder "SPANISH_ANIMALS/" --verbose "spanish_animals.csv" "SPANISH_ANIMALS/spanish_animals.lxf"
+../decker --front_title "Animals" --back_title "Animales" --front_language "english" --back_language "spanish" --input_format "{{front_word}}|{{back_word}}|{{front_transcription}}|{{back_transcription}}|{{front_sample}}|{{back_sample}}|{{front_comment}}|{{back_comment}}|{{front_gender}}|{{back_gender}}|{{image}}" --media_folder "SPANISH_ANIMALS/" --dump_folder "SPANISH_ANIMALS/" --verbose "spanish_animals.csv" "SPANISH_ANIMALS/spanish_animals.lxf"
 hexdump -C SPANISH_ANIMALS/spanish_animals.lxf > SPANISH_ANIMALS/dump_lexilize_hexa.txt
 cat SPANISH_ANIMALS/spanish_animals.lxf | ~/data/WORK/TOOL/PROTOC/bin/protoc --decode_raw >SPANISH_ANIMALS/dump_lexilize_proto.txt
 read key

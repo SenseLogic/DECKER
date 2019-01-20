@@ -1447,24 +1447,24 @@ class COLLECTION
     // ~~
     
     ubyte[] GetIntegerByteArray(
-		long value
-		)
-	{
-		long
-			byte_index;
-		ubyte[]
-			byte_array;
-			
-		for ( byte_index = 0;
-		      byte_index < 4;
-			  ++byte_index )
-		{
-			byte_array = cast( ubyte )( value & 127 ) ~ byte_array;
-			value >>= 8;
-		}
-		
-		return byte_array;
-	}
+        long value
+        )
+    {
+        long
+            byte_index;
+        ubyte[]
+            byte_array;
+            
+        for ( byte_index = 0;
+              byte_index < 4;
+              ++byte_index )
+        {
+            byte_array = cast( ubyte )( value & 127 ) ~ byte_array;
+            value >>= 8;
+        }
+        
+        return byte_array;
+    }
 
     // ~~
 
@@ -1494,6 +1494,39 @@ class COLLECTION
 
         return media_byte_array;
     }
+    
+    // ~~
+    
+    string GetGender(
+        string gender
+        )
+    {
+        if ( gender == ""
+             || gender == "n"
+			 || gender == "neuter"
+			 || gender == "neutral" )
+        {
+            return "0";
+        }
+        else if ( gender == "m"
+                  || gender == "male"
+                  || gender == "masculine" )
+        {
+            return "1";
+        }
+        else if ( gender == "f"
+                  || gender == "female"
+                  || gender == "feminine" )
+        {
+            return "2";
+        }
+        else 
+        {
+            Abort( "Invalid gender : " ~ gender );
+            
+            return "";
+        }
+    }
 
     // ~~
 
@@ -1513,7 +1546,7 @@ class COLLECTION
         word_message.AddString( "transc", 3, card.GetValue( prefix ~ "_transcription" ) );
         word_message.AddString( "sample", 4, card.GetValue( prefix ~ "_sample" ) );
         word_message.AddString( "comment", 5, card.GetValue( prefix ~ "_comment" ) );
-        word_message.AddString( "gender", 7, card.GetValue( prefix ~ "_gender" ) );
+        word_message.AddString( "gender", 7, GetGender( card.GetValue( prefix ~ "_gender" ) ) );
 
         return word_message;
     }
