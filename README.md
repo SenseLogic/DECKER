@@ -44,183 +44,184 @@ decker [options] input_file_path output_file_path
 --back_language : back language
 --input_format "format" : parses the card parameters with this format
 --output_format "format" : exports the card parameters with this format
+--media_folder : use this folder read and write media files
+--dump_folder : use this folder to write dump files
 --trim : trim the card parameters
---dump : dump the processing data
 --verbose : show the processing messages
 ```
 
 ## LXF export
 
-Deck options :
+Supported deck parameters :
 
-*   --front_title
-*   --back_title
-*   --front_language
-*   --back_language
+*   front_title
+*   back_title
+*   front_language
+*   back_language
 
-Card parameters :
+Supported card parameters :
 
-*   {{image}}
-*   {{front_image}}
-*   {{back_image}}
-*   {{front_word}}
-*   {{back_word}}
-*   {{front_transcription}}
-*   {{back_transcription}}
-*   {{front_sample}}
-*   {{back_sample}}
-*   {{front_comment}}
-*   {{back_comment}}
-*   {{front_gender}}
-*   {{back_gender}}
+*   image
+*   front_image
+*   back_image
+*   front_word
+*   back_word
+*   front_transcription
+*   back_transcription
+*   front_sample
+*   back_sample
+*   front_comment
+*   back_comment
+*   front_gender
+*   back_gender
 
-Language names :
+Supported languages :
 
-*   "english"
-*   "french"
-*   "german"
-*   "italian"
-*   "dutch"
-*   "swedish"
-*   "spanish"
-*   "danish"
-*   "portuguese"
-*   "norwegian"
-*   "hebrew"
-*   "japanese kanji"
-*   "arabic"
-*   "finnish"
-*   "greek"
-*   "icelandic"
-*   "maltese"
-*   "turkish"
-*   "croatian"
-*   "chinese traditional"
-*   "urdu"
-*   "hindi"
-*   "thai"
-*   "korean"
-*   "lithuanian"
-*   "polish"
-*   "hungarian"
-*   "estonian"
-*   "latvian"
-*   "sami"
-*   "faroese"
-*   "farsi"
-*   "russian"
-*   "chinese simplified"
-*   "flemish"
-*   "irish gaelic"
-*   "albanian"
-*   "romanian"
-*   "czech"
-*   "slovak"
-*   "slovenian"
-*   "yiddish"
-*   "serbian"
-*   "macedonian"
-*   "bulgarian"
-*   "ukrainian"
-*   "belarusian"
-*   "uzbek"
-*   "kazakh"
-*   "azerbaijani cyrillic"
-*   "azerbaijani arabic"
-*   "armenian"
-*   "georgian"
-*   "moldavian"
-*   "kyrgyz"
-*   "tajik"
-*   "turkmen"
-*   "mongolian"
-*   "mongolian cyrillic"
-*   "pashto"
-*   "kurdish"
-*   "kashmiri"
-*   "sindhi"
-*   "tibetan"
-*   "nepali"
-*   "sanskrit"
-*   "marathi"
-*   "bengali"
-*   "assamese"
-*   "gujarati"
-*   "punjabi"
-*   "oriya"
-*   "malayalam"
-*   "kannada"
-*   "tamil"
-*   "telugu"
-*   "sinhalese"
-*   "burmese"
-*   "khmer"
-*   "lao"
-*   "vietnamese"
-*   "indonesian"
-*   "tagalog"
-*   "malay roman"
-*   "malay arabic"
-*   "amharic"
-*   "tigrinya"
-*   "galla"
-*   "somali"
-*   "swahili"
-*   "kinyarwanda"
-*   "rundi"
-*   "nyanja chewa"
-*   "malagasy"
-*   "esperanto"
-*   "welsh"
-*   "basque"
-*   "catalan"
-*   "latin"
-*   "quenchua"
-*   "guarani"
-*   "aymara"
-*   "tatar"
-*   "uighur"
-*   "dzongkha"
-*   "javanese roman"
-*   "sundanese roman"
-*   "galician"
-*   "afrikaans"
-*   "breton"
-*   "inuktitut"
-*   "scottish gaelic"
-*   "manx gaelic"
-*   "irish gaelic dot above"
-*   "tongan"
-*   "greek polytonic"
-*   "greenlandic"
-*   "azerbaijani roman"
-*   "japanese kana"
-*   "bosnian"
-*   "chess"
-*   "history"
-*   "dates"
-*   "mathematics"
-*   "music"
-*   "physics"
-*   "geography"
-*   "medicine"
+*   english
+*   french
+*   german
+*   italian
+*   dutch
+*   swedish
+*   spanish
+*   danish
+*   portuguese
+*   norwegian
+*   hebrew
+*   japanese-kanji
+*   arabic
+*   finnish
+*   greek
+*   icelandic
+*   maltese
+*   turkish
+*   croatian
+*   chinese-traditional
+*   urdu
+*   hindi
+*   thai
+*   korean
+*   lithuanian
+*   polish
+*   hungarian
+*   estonian
+*   latvian
+*   sami
+*   faroese
+*   farsi
+*   russian
+*   chinese-simplified
+*   flemish
+*   irish-gaelic
+*   albanian
+*   romanian
+*   czech
+*   slovak
+*   slovenian
+*   yiddish
+*   serbian
+*   macedonian
+*   bulgarian
+*   ukrainian
+*   belarusian
+*   uzbek
+*   kazakh
+*   azerbaijani-cyrillic
+*   azerbaijani-arabic
+*   armenian
+*   georgian
+*   moldavian
+*   kyrgyz
+*   tajik
+*   turkmen
+*   mongolian
+*   mongolian-cyrillic
+*   pashto
+*   kurdish
+*   kashmiri
+*   sindhi
+*   tibetan
+*   nepali
+*   sanskrit
+*   marathi
+*   bengali
+*   assamese
+*   gujarati
+*   punjabi
+*   oriya
+*   malayalam
+*   kannada
+*   tamil
+*   telugu
+*   sinhalese
+*   burmese
+*   khmer
+*   lao
+*   vietnamese
+*   indonesian
+*   tagalog
+*   malay-roman
+*   malay-arabic
+*   amharic
+*   tigrinya
+*   galla
+*   somali
+*   swahili
+*   kinyarwanda
+*   rundi
+*   nyanja-chewa
+*   malagasy
+*   esperanto
+*   welsh
+*   basque
+*   catalan
+*   latin
+*   quenchua
+*   guarani
+*   aymara
+*   tatar
+*   uighur
+*   dzongkha
+*   javanese-roman
+*   sundanese-roman
+*   galician
+*   afrikaans
+*   breton
+*   inuktitut
+*   scottish-gaelic
+*   manx-gaelic
+*   irish-gaelic-dot-above
+*   tongan
+*   greek-polytonic
+*   greenlandic
+*   azerbaijani-roman
+*   japanese-kana
+*   bosnian
+*   chess
+*   history
+*   dates
+*   mathematics
+*   music
+*   physics
+*   geography
+*   medicine
 
 ### Examples
 
 ```bash
-decker --media_folder "SPANISH_VOCABULARY/" --dump --verbose "spanish_vocabulary.apkg"
+decker --media_folder "SPANISH_VOCABULARY/" --dump_folder "SPANISH_VOCABULARY/" --verbose "spanish_vocabulary.apkg"
 ```
 
 Write the Anki deck files into the output folder.
 
 ```bash
-decker --input_format "<img src=\"{{front_image}}\">§{{front_word}}<br/><i>{{back_word}}</i>" --media_folder "SPANISH_VOCABULARY/" --trim --dump --verbose "spanish_vocabulary.apkg"
+decker --input_format "<img src=\"{{front_image}}\">§{{front_word}}<br/><i>{{back_word}}</i>" --media_folder "SPANISH_VOCABULARY/" --dump_folder "SPANISH_VOCABULARY/" --trim --verbose "spanish_vocabulary.apkg"
 ```
 
 Write the Anki deck files into the output folder, and parses the Anki card parameters.
 
 ```bash
-decker --media_folder "<img src=\"{{front_image}}\">§{{front_word}}<br/><i>{{back_word}}</i>" --media_folder "SPANISH_VOCABULARY/" --trim "spanish_vocabulary.apkg" "spanish_vocabulary.lxf"
+decker --input_format "<img src=\"{{front_image}}\">§{{front_word}}<br/><i>{{back_word}}</i>" --media_folder "SPANISH_VOCABULARY/" --trim "spanish_vocabulary.apkg" "spanish_vocabulary.lxf"
 ```
 
 Write the Anki deck files into the output folder, parses the Anki card parameters and generates a Lexilize deck.
@@ -232,7 +233,7 @@ decker --input_format "<img src=\"{{front_image}}\">§{{front_word}}<br/><i>{{ba
 Write the Anki deck files into the output folder, parses the Anki card parameters and generates a CSV deck.
 
 ```bash
-decker --media_folder "SPANISH_VOCABULARY/" --input_format "{{front_word}}|{{back_word}}|{{front_image}}" --trim "spanish_vocabulary.csv" "spanish_vocabulary.lxf"
+decker --input_format "{{front_word}}|{{back_word}}|{{front_image}}" --media_folder "SPANISH_VOCABULARY/" --trim "spanish_vocabulary.csv" "spanish_vocabulary.lxf"
 ```
 
 Parses the CSV card parameters and generates a CSV deck.

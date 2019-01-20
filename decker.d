@@ -968,7 +968,7 @@ class COLLECTION
         {
             return 10;
         }
-        else if ( language_name == "japanese kanji" )
+        else if ( language_name == "japanese-kanji" )
         {
             return 11;
         }
@@ -1000,7 +1000,7 @@ class COLLECTION
         {
             return 18;
         }
-        else if ( language_name == "chinese traditional" )
+        else if ( language_name == "chinese-traditional" )
         {
             return 19;
         }
@@ -1056,7 +1056,7 @@ class COLLECTION
         {
             return 32;
         }
-        else if ( language_name == "chinese simplified" )
+        else if ( language_name == "chinese-simplified" )
         {
             return 33;
         }
@@ -1064,7 +1064,7 @@ class COLLECTION
         {
             return 34;
         }
-        else if ( language_name == "irish gaelic" )
+        else if ( language_name == "irish-gaelic" )
         {
             return 35;
         }
@@ -1120,11 +1120,11 @@ class COLLECTION
         {
             return 48;
         }
-        else if ( language_name == "azerbaijani cyrillic" )
+        else if ( language_name == "azerbaijani-cyrillic" )
         {
             return 49;
         }
-        else if ( language_name == "azerbaijani arabic" )
+        else if ( language_name == "azerbaijani-arabic" )
         {
             return 50;
         }
@@ -1156,7 +1156,7 @@ class COLLECTION
         {
             return 57;
         }
-        else if ( language_name == "mongolian cyrillic" )
+        else if ( language_name == "mongolian-cyrillic" )
         {
             return 58;
         }
@@ -1256,11 +1256,11 @@ class COLLECTION
         {
             return 82;
         }
-        else if ( language_name == "malay roman" )
+        else if ( language_name == "malay-roman" )
         {
             return 83;
         }
-        else if ( language_name == "malay arabic" )
+        else if ( language_name == "malay-arabic" )
         {
             return 84;
         }
@@ -1292,7 +1292,7 @@ class COLLECTION
         {
             return 91;
         }
-        else if ( language_name == "nyanja chewa" )
+        else if ( language_name == "nyanja-chewa" )
         {
             return 92;
         }
@@ -1344,11 +1344,11 @@ class COLLECTION
         {
             return 137;
         }
-        else if ( language_name == "javanese roman" )
+        else if ( language_name == "javanese-roman" )
         {
             return 138;
         }
-        else if ( language_name == "sundanese roman" )
+        else if ( language_name == "sundanese-roman" )
         {
             return 139;
         }
@@ -1368,15 +1368,15 @@ class COLLECTION
         {
             return 143;
         }
-        else if ( language_name == "scottish gaelic" )
+        else if ( language_name == "scottish-gaelic" )
         {
             return 144;
         }
-        else if ( language_name == "manx gaelic" )
+        else if ( language_name == "manx-gaelic" )
         {
             return 145;
         }
-        else if ( language_name == "irish gaelic dot above" )
+        else if ( language_name == "irish-gaelic-dot-above" )
         {
             return 146;
         }
@@ -1384,7 +1384,7 @@ class COLLECTION
         {
             return 147;
         }
-        else if ( language_name == "greek polytonic" )
+        else if ( language_name == "greek-polytonic" )
         {
             return 148;
         }
@@ -1392,11 +1392,11 @@ class COLLECTION
         {
             return 149;
         }
-        else if ( language_name == "azerbaijani roman" )
+        else if ( language_name == "azerbaijani-roman" )
         {
             return 150;
         }
-        else if ( language_name == "japanese kana" )
+        else if ( language_name == "japanese-kana" )
         {
             return 151;
         }
@@ -1610,7 +1610,7 @@ class COLLECTION
 
         if ( DumpOptionIsEnabled )
         {
-            dump_file_path = MediaFolderPath ~ "dump_lexilize.txt";
+            dump_file_path = DumpFolderPath ~ "dump_lexilize.txt";
             writeln( "Writing file : " ~ dump_file_path );
 
             dump_file_path.write( message.GetText() );
@@ -1650,7 +1650,7 @@ class COLLECTION
 
         if ( DumpOptionIsEnabled )
         {
-            dump_file_path = MediaFolderPath ~ "dump_csv.txt";
+            dump_file_path = DumpFolderPath ~ "dump_csv.txt";
             writeln( "Writing file : " ~ dump_file_path );
 
             dump_file_path.write( DumpText );
@@ -1768,7 +1768,7 @@ class COLLECTION
 
         if ( DumpOptionIsEnabled )
         {
-            dump_file_path = MediaFolderPath ~ "dump_anki_database.txt";
+            dump_file_path = DumpFolderPath ~ "dump_anki_database.txt";
             writeln( "Writing file : " ~ dump_file_path );
 
             dump_file_path.write( DumpText );
@@ -1786,7 +1786,7 @@ class COLLECTION
 
         if ( DumpOptionIsEnabled )
         {
-            dump_file_path = MediaFolderPath ~ "dump_anki.txt";
+            dump_file_path = DumpFolderPath ~ "dump_anki.txt";
             writeln( "Writing file : " ~ dump_file_path );
 
             dump_file_path.write( DumpText );
@@ -1813,6 +1813,7 @@ bool
 string
     BackLanguageName,
     BackTitle,
+    DumpFolderPath,
     DumpText,
     FrontLanguageName,
     FrontTitle,
@@ -1986,9 +1987,10 @@ void main(
     BackTitle = "";
     FrontLanguageName = "";
     BackLanguageName = "";
-    MediaFolderPath = "";
     InputFormatArray = null;
     OutputFormatArray = null;
+    MediaFolderPath = "";
+    DumpFolderPath = "";
     TrimOptionIsEnabled = false;
     DumpOptionIsEnabled = false;
     VerboseOptionIsEnabled = false;
@@ -2030,13 +2032,6 @@ void main(
 
             argument_array = argument_array[ 1 .. $ ];
         }
-        else if ( option == "--media_folder"
-                  && argument_array.length >= 1 )
-        {
-            MediaFolderPath = argument_array[ 0 ];
-
-            argument_array = argument_array[ 1 .. $ ];
-        }
         else if ( option == "--input_format"
                   && argument_array.length >= 1 )
         {
@@ -2051,13 +2046,24 @@ void main(
 
             argument_array = argument_array[ 1 .. $ ];
         }
+        else if ( option == "--media_folder"
+                  && argument_array.length >= 1 )
+        {
+            MediaFolderPath = argument_array[ 0 ];
+
+            argument_array = argument_array[ 1 .. $ ];
+        }
+        else if ( option == "--dump_folder"
+                  && argument_array.length >= 1 )
+        {
+            DumpFolderPath = argument_array[ 0 ];
+            DumpOptionIsEnabled = true;
+
+            argument_array = argument_array[ 1 .. $ ];
+        }
         else if ( option == "--trim" )
         {
             TrimOptionIsEnabled = true;
-        }
-        else if ( option == "--dump" )
-        {
-            DumpOptionIsEnabled = true;
         }
         else if ( option == "--verbose" )
         {
@@ -2096,15 +2102,15 @@ void main(
         writeln( "    --input_format \"format\"" );
         writeln( "    --output_format \"format\"" );
         writeln( "    --media_folder MEDIA_FOLDER/" );
+        writeln( "    --dump_folder DUMP_FOLDER/" );
         writeln( "    --trim" );
-        writeln( "    --dump" );
         writeln( "    --verbose" );
         writeln( "Examples :" );
-        writeln( "    decker --media_folder \"SPANISH_VOCABULARY/\" --dump --verbose \"spanish_vocabulary.apkg\"" );
-        writeln( "    decker --input_format \"<img src=\\\"{{front_image}}\\\">§{{front_word}}<br/><i>{{back_word}}</i>\" --media_folder \"SPANISH_VOCABULARY/\" --trim --dump --verbose \"spanish_vocabulary.apkg\"" );
-        writeln( "    decker --media_folder \"<img src=\\\"{{front_image}}\\\">§{{front_word}}<br/><i>{{back_word}}</i>\" --media_folder \"SPANISH_VOCABULARY/\" --trim \"spanish_vocabulary.apkg\" \"spanish_vocabulary.lxf\"" );
+        writeln( "    decker --media_folder \"SPANISH_VOCABULARY/\" --dump_folder \"SPANISH_VOCABULARY/\" --verbose \"spanish_vocabulary.apkg\"" );
+        writeln( "    decker --input_format \"<img src=\\\"{{front_image}}\\\">§{{front_word}}<br/><i>{{back_word}}</i>\" --media_folder \"SPANISH_VOCABULARY/\" --dump_folder \"SPANISH_VOCABULARY/\" --trim --verbose \"spanish_vocabulary.apkg\"" );
+        writeln( "    decker --input_format \"<img src=\\\"{{front_image}}\\\">§{{front_word}}<br/><i>{{back_word}}</i>\" --media_folder \"SPANISH_VOCABULARY/\" --trim \"spanish_vocabulary.apkg\" \"spanish_vocabulary.lxf\"" );
         writeln( "    decker --input_format \"<img src=\\\"{{front_image}}\\\">§{{front_word}}<br/><i>{{back_word}}</i>\" --output_format \"{{front_word}}|{{back_word}}|{{front_image}}\" --trim \"spanish_vocabulary.apkg\" \"spanish_vocabulary.csv\"" );
-        writeln( "    decker --media_folder \"SPANISH_VOCABULARY/\" --input_format \"{{front_word}}|{{back_word}}|{{front_image}}\" --trim \"spanish_vocabulary.csv\" \"spanish_vocabulary.lxf\"" );
+        writeln( "    decker --input_format \"{{front_word}}|{{back_word}}|{{front_image}}\" --media_folder \"SPANISH_VOCABULARY/\" --trim \"spanish_vocabulary.csv\" \"spanish_vocabulary.lxf\"" );
 
         Abort( "Invalid arguments : " ~ argument_array.to!string() );
     }
