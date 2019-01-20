@@ -61,9 +61,6 @@ Supported deck parameters :
 
 Supported card parameters :
 
-*   image
-*   front_image
-*   back_image
 *   front_word
 *   back_word
 *   front_transcription
@@ -74,6 +71,9 @@ Supported card parameters :
 *   back_comment
 *   front_gender
 *   back_gender
+*   front_image
+*   back_image
+*   image
 
 Supported languages :
 

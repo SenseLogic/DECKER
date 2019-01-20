@@ -348,7 +348,7 @@ class MESSAGE
         }
         else
         {
-            return "?";
+            return "*";
         }
     }
 
@@ -1443,6 +1443,28 @@ class COLLECTION
             return -1;
         }
     }
+    
+    // ~~
+    
+    ubyte[] GetIntegerByteArray(
+		long value
+		)
+	{
+		long
+			byte_index;
+		ubyte[]
+			byte_array;
+			
+		for ( byte_index = 0;
+		      byte_index < 4;
+			  ++byte_index )
+		{
+			byte_array = cast( ubyte )( value & 127 ) ~ byte_array;
+			value >>= 8;
+		}
+		
+		return byte_array;
+	}
 
     // ~~
 
@@ -1452,25 +1474,17 @@ class COLLECTION
     {
         ubyte[]
             media_byte_array;
-        uint
-            image_count,
-            image_size,
-            image_type;
 
-        image_count = card.ImageArray.length.to!uint();
-        media_byte_array ~= ( cast( ubyte * )&image_count )[ 0 .. 4 ];
+        media_byte_array ~= GetIntegerByteArray( card.ImageArray.length );
 
         foreach ( image; card.ImageArray )
         {
-            image_size = image.ByteArray.length.to!uint();
-            media_byte_array ~= ( cast( ubyte * )&image_size )[ 0 .. 4 ];
+            media_byte_array ~= GetIntegerByteArray( image.ByteArray.length );
         }
 
-        image_type = 0;
-
         foreach ( image; card.ImageArray )
         {
-            media_byte_array ~= ( cast( ubyte * )&image_type )[ 0 .. 4 ];
+            media_byte_array ~= GetIntegerByteArray( 0 );
         }
 
         foreach ( image; card.ImageArray )
