@@ -80,12 +80,12 @@ Valid genders :
 *   n
 *   neuter
 *   neutral
-*	m
-*	male
-*	masculine
-*	f
-*	female
-*	feminine
+*   m
+*   male
+*   masculine
+*   f
+*   female
+*   feminine
 
 Valid languages :
 
@@ -257,7 +257,7 @@ Parses the CSV card parameters and generates a CSV deck.
 
 ## Version
 
-0.1
+1.0
 
 ## Author
 
