@@ -1,6 +1,5 @@
 #!/bin/sh
 set -x
-cd TEST
 
 ../decker --media_folder "SPANISH_CORE/" --dump_folder "SPANISH_CORE/" --verbose "spanish_core.apkg"
 read key
