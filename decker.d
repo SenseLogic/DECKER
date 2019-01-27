@@ -669,6 +669,8 @@ class CARD
         OutputFormatIndex;
     IMAGE[]
         ImageArray;
+    bool
+        IsValid;
 
     // -- CONSTRUCTORS
 
@@ -765,12 +767,16 @@ class CARD
         PARAMETER
             parameter;
 
+        IsValid = true;
+
         DumpLine( card_text.GetQuotedText(), true );
 
         if ( InputFormatArray.length > 0 )
         {
             foreach ( input_format_index, input_format; InputFormatArray )
             {
+                IsValid = true;
+
                 OutputFormatIndex = input_format_index;
                 ParameterArray = null;
 
@@ -802,7 +808,9 @@ class CARD
                         }
                         else
                         {
-                            Abort( "Invalid card text : " ~ card_text );
+                            IsValid = false;
+
+                            break;
                         }
                     }
 
@@ -819,15 +827,18 @@ class CARD
                     part_array = part_array[ 2 .. $ ];
                 }
 
-                if ( remaining_card_text.length == 0
-                     || ( part_array.length == 1
-                          && remaining_card_text == part_array[ 0 ] ) )
+                if ( IsValid
+                     && ( remaining_card_text.length == 0
+                          || ( part_array.length == 1
+                               && remaining_card_text == part_array[ 0 ] ) ) )
                 {
                     return;
                 }
             }
 
-            Abort( "Invalid card text : " ~ card_text );
+            PrintError( "Invalid card text : " ~ card_text );
+
+            IsValid = false;
         }
     }
 
@@ -906,7 +917,10 @@ class COLLECTION
 
         foreach ( card; Collection.CardArray )
         {
-            csv_file_text ~= card.GetCsvLine() ~ "\n";
+            if ( card.IsValid )
+            {
+                csv_file_text ~= card.GetCsvLine() ~ "\n";
+            }
         }
 
         writeln( "Writing file : " ~ OutputFilePath );
@@ -1443,9 +1457,9 @@ class COLLECTION
             return -1;
         }
     }
-    
+
     // ~~
-    
+
     ubyte[] GetIntegerByteArray(
         long value
         )
@@ -1454,7 +1468,7 @@ class COLLECTION
             byte_index;
         ubyte[]
             byte_array;
-            
+
         for ( byte_index = 0;
               byte_index < 4;
               ++byte_index )
@@ -1462,7 +1476,7 @@ class COLLECTION
             byte_array = cast( ubyte )( value & 127 ) ~ byte_array;
             value >>= 8;
         }
-        
+
         return byte_array;
     }
 
@@ -1494,17 +1508,17 @@ class COLLECTION
 
         return media_byte_array;
     }
-    
+
     // ~~
-    
+
     string GetGender(
         string gender
         )
     {
         if ( gender == ""
              || gender == "n"
-			 || gender == "neuter"
-			 || gender == "neutral" )
+             || gender == "neuter"
+             || gender == "neutral" )
         {
             return "0";
         }
@@ -1520,10 +1534,10 @@ class COLLECTION
         {
             return "2";
         }
-        else 
+        else
         {
             Abort( "Invalid gender : " ~ gender );
-            
+
             return "";
         }
     }
@@ -1622,7 +1636,10 @@ class COLLECTION
 
         foreach ( card; Collection.CardArray )
         {
-            base_message.AddMessage( GetRecordMessage( "records", 15, card ) );
+            if ( card.IsValid )
+            {
+                base_message.AddMessage( GetRecordMessage( "records", 15, card ) );
+            }
         }
 
         return base_message;
