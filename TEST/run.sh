@@ -32,6 +32,7 @@ read key
 ../decker --front_title "Vocabulary" --back_title "Vocabulario" --front_language "english" --back_language "spanish" --input_format "<img src=\"{{front_image}}\">§{{front_word}}<br/><i>{{back_word}}</i>" --media_folder "SPANISH_VOCABULARY/" --dump_folder "SPANISH_VOCABULARY/" --trim --verbose "spanish_vocabulary.apkg" "SPANISH_VOCABULARY/spanish_vocabulary.lxf"
 hexdump -C SPANISH_VOCABULARY/spanish_vocabulary.lxf > SPANISH_VOCABULARY/dump_lexilize_hexa.txt
 cat SPANISH_VOCABULARY/spanish_vocabulary.lxf | ~/data/WORK/TOOL/PROTOC/bin/protoc --decode_raw >SPANISH_VOCABULARY/dump_lexilize_proto.txt
+read key
 
 ../decker --media_folder "VOCABULAIRE_ESPAGNOL/" --dump_folder "VOCABULAIRE_ESPAGNOL/" --verbose "vocabulaire_espagnol.apkg"
 read key
