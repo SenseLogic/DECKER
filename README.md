@@ -20,7 +20,7 @@ Decker converts both textual and illustrated flashcard decks from one format to 
 
 ## Installation
 
-Install the [DMD 2 compiler](https://dlang.org/download.html) ((using the MinGW setup option on Windows)).
+Install the [DMD 2 compiler](https://dlang.org/download.html) (using the MinGW setup option on Windows).
 
 Build the executable with the following command lines :
 
