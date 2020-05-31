@@ -44,7 +44,7 @@ decker [options] input_file_path output_file_path
 --back_language : back language
 --input_format "format" : parses the card parameters with this format
 --output_format "format" : exports the card parameters with this format
---media_folder : use this folder read and write media files
+--media_folder : use this folder to read and write media files
 --dump_folder : use this folder to write dump files
 --trim : trim the card parameters
 --verbose : show the processing messages
